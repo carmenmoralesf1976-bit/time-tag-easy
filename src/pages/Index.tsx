@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, User, BadgeCheck, FileDown, AlertTriangle } from "lucide-react";
+import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck } from "lucide-react";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
@@ -15,9 +15,10 @@ export default function Index() {
   const [now, setNow] = useState(new Date());
   const [showSignature, setShowSignature] = useState(false);
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [gdprAccepted, setGdprAccepted] = useState(false);
 
   useEffect(() => {
-    setEntries(getEntries());
+    getEntries().then(setEntries);
   }, []);
 
   useEffect(() => {
@@ -32,6 +33,10 @@ export default function Index() {
     }
     if (!badgeId.trim()) {
       toast.error("Introduce tu nº de placa o DNI");
+      return false;
+    }
+    if (!gdprAccepted) {
+      toast.error("Debes aceptar la política de protección de datos para fichar");
       return false;
     }
     return true;
@@ -67,14 +72,14 @@ export default function Index() {
       notes: notes.trim() || undefined,
     };
 
-    const updated = addEntry(entry);
+    const updated = await addEntry(entry);
     setEntries(updated);
     setNotes("");
     setLoading(false);
     toast.success(`¡Entrada registrada, ${name.trim()}!`);
   };
 
-  const handleSignatureSave = (dataUrl: string) => {
+  const handleSignatureSave = async (dataUrl: string) => {
     setShowSignature(false);
     const entry: TimeEntry = {
       id: crypto.randomUUID(),
@@ -87,7 +92,7 @@ export default function Index() {
       signature: dataUrl,
     };
 
-    const updated = addEntry(entry);
+    const updated = await addEntry(entry);
     setEntries(updated);
     setNotes("");
     setPendingLocation(null);
@@ -169,24 +174,43 @@ export default function Index() {
           />
         </div>
 
+        {/* GDPR Checkbox */}
+        <div
+          className="mb-4 rounded-xl border border-border bg-card p-4"
+          style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 210ms forwards", opacity: 0 }}
+        >
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={gdprAccepted}
+              onChange={(e) => setGdprAccepted(e.target.checked)}
+              className="mt-0.5 h-5 w-5 rounded border-2 border-input accent-primary cursor-pointer shrink-0"
+            />
+            <span className="text-xs leading-relaxed text-muted-foreground">
+              <ShieldCheck className="inline h-3.5 w-3.5 mr-1 -mt-0.5 text-[hsl(var(--success))]" />
+              He leído y acepto la <strong className="text-foreground">política de protección de datos</strong> y el registro de geolocalización para el control horario, conforme al RGPD y la normativa vigente.
+            </span>
+          </label>
+        </div>
+
         {/* GPS indicator */}
         <div
           className="mb-4 flex items-center gap-2 rounded-xl bg-secondary/60 px-4 py-2.5 text-xs text-muted-foreground"
-          style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 220ms forwards", opacity: 0 }}
+          style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 250ms forwards", opacity: 0 }}
         >
           <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))] animate-pulse" />
           Geolocalización obligatoria — se capturarán las coordenadas GPS al fichar
         </div>
 
         {/* Clock buttons */}
-        <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 270ms forwards", opacity: 0 }}>
-          <ClockButtons onClock={handleClock} loading={loading} />
+        <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 300ms forwards", opacity: 0 }}>
+          <ClockButtons onClock={handleClock} loading={loading} disabled={!gdprAccepted} />
         </div>
 
         {/* History */}
         <div
           className="mt-10"
-          style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 400ms forwards", opacity: 0 }}
+          style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 430ms forwards", opacity: 0 }}
         >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Últimos fichajes</h2>
