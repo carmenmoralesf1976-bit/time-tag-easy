@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export interface TimeEntry {
   id: string;
   employeeName: string;
@@ -9,21 +11,60 @@ export interface TimeEntry {
   signature?: string;
 }
 
-const STORAGE_KEY = "time-clock-entries";
+/** Save entry to Supabase and return latest entries */
+export async function addEntry(entry: TimeEntry): Promise<TimeEntry[]> {
+  await supabase.from("time_entries").insert({
+    id: entry.id,
+    employee_name: entry.employeeName,
+    badge_id: entry.badgeId,
+    type: entry.type,
+    timestamp: entry.timestamp,
+    latitude: entry.location.lat,
+    longitude: entry.location.lng,
+    notes: entry.notes ?? null,
+    signature: entry.signature ?? null,
+    gdpr_accepted: true,
+  });
 
-export function getEntries(): TimeEntry[] {
+  // Also keep localStorage as offline fallback
+  const local = getLocalEntries();
+  const updated = [entry, ...local];
+  localStorage.setItem("time-clock-entries", JSON.stringify(updated));
+
+  return getEntries();
+}
+
+/** Fetch entries from Supabase, fallback to localStorage */
+export async function getEntries(): Promise<TimeEntry[]> {
+  const { data, error } = await supabase
+    .from("time_entries")
+    .select("*")
+    .order("timestamp", { ascending: false })
+    .limit(50);
+
+  if (error || !data || data.length === 0) {
+    return getLocalEntries();
+  }
+
+  return data.map((r) => ({
+    id: r.id,
+    employeeName: r.employee_name,
+    badgeId: r.badge_id,
+    type: r.type as "entrada" | "salida",
+    timestamp: r.timestamp,
+    location: { lat: r.latitude, lng: r.longitude },
+    notes: r.notes ?? undefined,
+    signature: r.signature ?? undefined,
+  }));
+}
+
+function getLocalEntries(): TimeEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem("time-clock-entries");
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
-}
-
-export function addEntry(entry: TimeEntry): TimeEntry[] {
-  const entries = [entry, ...getEntries()];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  return entries;
 }
 
 export function requestLocation(): Promise<{ lat: number; lng: number } | null> {
