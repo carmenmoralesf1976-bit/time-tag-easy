@@ -1,0 +1,166 @@
+import { useState, useEffect } from "react";
+import { ShieldCheck, RefreshCw, FileDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
+import { Link } from "react-router-dom";
+
+export default function Inspector() {
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("time_entries")
+      .select("*")
+      .order("timestamp", { ascending: false })
+      .limit(500);
+
+    if (data) {
+      setEntries(
+        data.map((r: any) => ({
+          id: r.id,
+          employeeName: r.employee_name,
+          badgeId: r.badge_id,
+          workPost: r.work_post ?? "",
+          type: r.type as "entrada" | "salida",
+          timestamp: r.timestamp,
+          location: { lat: r.latitude, lng: r.longitude },
+          notes: r.notes ?? undefined,
+          signature: r.signature ?? undefined,
+        }))
+      );
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+        {/* Header */}
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary">
+              <ShieldCheck className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">Panel del Inspector</h1>
+              <p className="text-xs text-muted-foreground">Registro completo de fichajes</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              ← Volver a fichaje
+            </Link>
+            <button
+              onClick={fetchAll}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              Actualizar
+            </button>
+            {entries.length > 0 && (
+              <button
+                onClick={() => exportToCSV(entries)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              >
+                <FileDown className="h-3.5 w-3.5" />
+                Exportar CSV
+              </button>
+            )}
+          </div>
+        </header>
+
+        {/* Stats */}
+        <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "Total fichajes", value: entries.length },
+            { label: "Entradas", value: entries.filter((e) => e.type === "entrada").length },
+            { label: "Salidas", value: entries.filter((e) => e.type === "salida").length },
+            { label: "Con incidencia", value: entries.filter((e) => e.notes).length },
+          ].map((s) => (
+            <div key={s.label} className="rounded-xl border border-border bg-card p-4 text-center">
+              <p className="text-2xl font-bold">{s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div className="rounded-xl border border-border bg-card overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-secondary/50">
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Tipo</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Nombre</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">DNI/Placa</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Puesto</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Fecha</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Hora</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Incidencia</th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Firma</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                    Cargando fichajes…
+                  </td>
+                </tr>
+              ) : entries.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                    No hay fichajes registrados
+                  </td>
+                </tr>
+              ) : (
+                entries.map((e) => {
+                  const d = new Date(e.timestamp);
+                  return (
+                    <tr key={e.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            e.type === "entrada"
+                              ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]"
+                              : "bg-destructive/15 text-destructive"
+                          }`}
+                        >
+                          {e.type === "entrada" ? "Entrada" : "Salida"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium">{e.employeeName}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{e.badgeId}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{e.workPost || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {d.toLocaleDateString("es-ES")}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-muted-foreground">
+                        {d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">
+                        {e.notes || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {e.signature ? "✅" : "—"}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
