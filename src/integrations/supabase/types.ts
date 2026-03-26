@@ -28,6 +28,7 @@ export type Database = {
           timestamp: string
           type: string
           user_id: string | null
+          work_post: string | null
         }
         Insert: {
           badge_id: string
@@ -42,6 +43,7 @@ export type Database = {
           timestamp?: string
           type: string
           user_id?: string | null
+          work_post?: string | null
         }
         Update: {
           badge_id?: string
@@ -56,6 +58,7 @@ export type Database = {
           timestamp?: string
           type?: string
           user_id?: string | null
+          work_post?: string | null
         }
         Relationships: []
       }
