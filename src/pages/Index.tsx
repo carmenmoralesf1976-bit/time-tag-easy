@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2 } from "lucide-react";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 export default function Index() {
   const [name, setName] = useState(() => localStorage.getItem("employee-name") ?? "");
   const [badgeId, setBadgeId] = useState(() => localStorage.getItem("employee-badge") ?? "");
+  const [workPost, setWorkPost] = useState(() => localStorage.getItem("employee-work-post") ?? "");
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,10 @@ export default function Index() {
       toast.error("Introduce tu nº de placa o DNI");
       return false;
     }
+    if (!workPost.trim()) {
+      toast.error("Introduce tu puesto de trabajo");
+      return false;
+    }
     if (!gdprAccepted) {
       toast.error("Debes aceptar la política de protección de datos para fichar");
       return false;
@@ -47,6 +52,7 @@ export default function Index() {
     setLoading(true);
     localStorage.setItem("employee-name", name.trim());
     localStorage.setItem("employee-badge", badgeId.trim());
+    localStorage.setItem("employee-work-post", workPost.trim());
 
     const location = await requestLocation();
     if (!location) {
@@ -66,6 +72,7 @@ export default function Index() {
       id: crypto.randomUUID(),
       employeeName: name.trim(),
       badgeId: badgeId.trim(),
+      workPost: workPost.trim(),
       type,
       timestamp: new Date().toISOString(),
       location,
@@ -85,6 +92,7 @@ export default function Index() {
       id: crypto.randomUUID(),
       employeeName: name.trim(),
       badgeId: badgeId.trim(),
+      workPost: workPost.trim(),
       type: "salida",
       timestamp: new Date().toISOString(),
       location: pendingLocation!,
@@ -150,6 +158,19 @@ export default function Index() {
               value={badgeId}
               onChange={(e) => setBadgeId(e.target.value)}
               placeholder="Ej: 12345678A"
+              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
+            />
+          </div>
+          <div>
+            <label htmlFor="work-post" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Building2 className="h-4 w-4" /> Puesto de trabajo
+            </label>
+            <input
+              id="work-post"
+              type="text"
+              value={workPost}
+              onChange={(e) => setWorkPost(e.target.value)}
+              placeholder="Ej: Garita Norte / Centro Comercial"
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
             />
           </div>

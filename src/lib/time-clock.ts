@@ -4,6 +4,7 @@ export interface TimeEntry {
   id: string;
   employeeName: string;
   badgeId: string;
+  workPost: string;
   type: "entrada" | "salida";
   timestamp: string;
   location: { lat: number; lng: number };
@@ -17,6 +18,7 @@ export async function addEntry(entry: TimeEntry): Promise<TimeEntry[]> {
     id: entry.id,
     employee_name: entry.employeeName,
     badge_id: entry.badgeId,
+    work_post: entry.workPost || null,
     type: entry.type,
     timestamp: entry.timestamp,
     latitude: entry.location.lat,
@@ -24,7 +26,7 @@ export async function addEntry(entry: TimeEntry): Promise<TimeEntry[]> {
     notes: entry.notes ?? null,
     signature: entry.signature ?? null,
     gdpr_accepted: true,
-  });
+  } as any);
 
   // Also keep localStorage as offline fallback
   const local = getLocalEntries();
@@ -46,10 +48,11 @@ export async function getEntries(): Promise<TimeEntry[]> {
     return getLocalEntries();
   }
 
-  return data.map((r) => ({
+  return data.map((r: any) => ({
     id: r.id,
     employeeName: r.employee_name,
     badgeId: r.badge_id,
+    workPost: r.work_post ?? "",
     type: r.type as "entrada" | "salida",
     timestamp: r.timestamp,
     location: { lat: r.latitude, lng: r.longitude },
@@ -82,13 +85,14 @@ export function requestLocation(): Promise<{ lat: number; lng: number } | null> 
 }
 
 export function exportToCSV(entries: TimeEntry[]): void {
-  const header = "Tipo,Empleado,Placa/DNI,Fecha,Hora,Latitud,Longitud,Incidencia,Firma";
+  const header = "Tipo,Empleado,Placa/DNI,Puesto,Fecha,Hora,Latitud,Longitud,Incidencia,Firma";
   const rows = entries.map((e) => {
     const d = new Date(e.timestamp);
     return [
       e.type,
       `"${e.employeeName}"`,
       `"${e.badgeId}"`,
+      `"${e.workPost ?? ""}"`,
       d.toLocaleDateString("es-ES"),
       d.toLocaleTimeString("es-ES"),
       e.location?.lat ?? "",

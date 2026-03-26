@@ -24,6 +24,7 @@ export default function HistoryTable({ entries }: HistoryTableProps) {
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Tipo</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Empleado</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Placa/DNI</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Puesto</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Fecha</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Hora</th>
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">GPS</th>
@@ -52,6 +53,7 @@ export default function HistoryTable({ entries }: HistoryTableProps) {
                   </td>
                   <td className="px-4 py-3 font-medium">{entry.employeeName}</td>
                   <td className="px-4 py-3 tabular-nums text-muted-foreground">{entry.badgeId}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{entry.workPost || "—"}</td>
                   <td className="px-4 py-3 tabular-nums text-muted-foreground">
                     {d.toLocaleDateString("es-ES", { day: "2-digit", month: "short" })}
                   </td>
