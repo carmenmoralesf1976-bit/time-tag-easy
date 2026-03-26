@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2 } from "lucide-react";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
@@ -154,6 +154,19 @@ export default function Index() {
               value={badgeId}
               onChange={(e) => setBadgeId(e.target.value)}
               placeholder="Ej: 12345678A"
+              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
+            />
+          </div>
+          <div>
+            <label htmlFor="work-post" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Building2 className="h-4 w-4" /> Puesto de trabajo
+            </label>
+            <input
+              id="work-post"
+              type="text"
+              value={workPost}
+              onChange={(e) => setWorkPost(e.target.value)}
+              placeholder="Ej: Garita Norte / Centro Comercial"
               className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
             />
           </div>
