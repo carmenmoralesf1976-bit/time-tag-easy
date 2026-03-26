@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
