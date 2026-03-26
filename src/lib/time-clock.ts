@@ -48,7 +48,7 @@ export async function getEntries(): Promise<TimeEntry[]> {
     return getLocalEntries();
   }
 
-  return data.map((r) => ({
+  return data.map((r: any) => ({
     id: r.id,
     employeeName: r.employee_name,
     badgeId: r.badge_id,
