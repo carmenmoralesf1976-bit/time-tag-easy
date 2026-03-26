@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
@@ -165,14 +166,17 @@ export default function Index() {
             <label htmlFor="work-post" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Building2 className="h-4 w-4" /> Puesto de trabajo
             </label>
-            <input
-              id="work-post"
-              type="text"
-              value={workPost}
-              onChange={(e) => setWorkPost(e.target.value)}
-              placeholder="Ej: Garita Norte / Centro Comercial"
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
-            />
+            <Select value={workPost} onValueChange={(val) => setWorkPost(val)}>
+              <SelectTrigger className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium ring-ring/20 focus:ring-2 focus:border-foreground/20 h-auto">
+                <SelectValue placeholder="Selecciona un puesto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Puesto A - Guadalajara">Puesto A - Guadalajara</SelectItem>
+                <SelectItem value="Puesto B - Guadalajara">Puesto B - Guadalajara</SelectItem>
+                <SelectItem value="Sede Central PYCSECA">Sede Central PYCSECA</SelectItem>
+                <SelectItem value="Otros">Otros</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
