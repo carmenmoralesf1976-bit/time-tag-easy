@@ -36,6 +36,10 @@ export default function Index() {
       toast.error("Introduce tu nº de placa o DNI");
       return false;
     }
+    if (!workPost.trim()) {
+      toast.error("Introduce tu puesto de trabajo");
+      return false;
+    }
     if (!gdprAccepted) {
       toast.error("Debes aceptar la política de protección de datos para fichar");
       return false;
