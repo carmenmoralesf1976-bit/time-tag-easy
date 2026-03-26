@@ -229,7 +229,12 @@ export default function Index() {
 
         {/* Clock buttons */}
         <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 300ms forwards", opacity: 0 }}>
-          <ClockButtons onClock={handleClock} loading={loading} disabled={!gdprAccepted} />
+          <ClockButtons onClock={handleClock} onDelay={() => {
+            if (!validate()) return;
+            const msg = `⚠️ ${name.trim()} (${badgeId.trim()}) avisa de RETRASO en ${workPost.trim()} — ${new Date().toLocaleTimeString("es-ES")}`;
+            setNotes((prev) => prev ? `${prev}\n${msg}` : msg);
+            toast.warning("Aviso de retraso registrado en incidencias");
+          }} loading={loading} disabled={!gdprAccepted} />
         </div>
 
         {/* History */}
