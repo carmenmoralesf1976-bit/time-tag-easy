@@ -9,6 +9,7 @@ import { toast } from "sonner";
 export default function Index() {
   const [name, setName] = useState(() => localStorage.getItem("employee-name") ?? "");
   const [badgeId, setBadgeId] = useState(() => localStorage.getItem("employee-badge") ?? "");
+  const [workPost, setWorkPost] = useState(() => localStorage.getItem("employee-work-post") ?? "");
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,6 +48,7 @@ export default function Index() {
     setLoading(true);
     localStorage.setItem("employee-name", name.trim());
     localStorage.setItem("employee-badge", badgeId.trim());
+    localStorage.setItem("employee-work-post", workPost.trim());
 
     const location = await requestLocation();
     if (!location) {
@@ -66,6 +68,7 @@ export default function Index() {
       id: crypto.randomUUID(),
       employeeName: name.trim(),
       badgeId: badgeId.trim(),
+      workPost: workPost.trim(),
       type,
       timestamp: new Date().toISOString(),
       location,
@@ -85,6 +88,7 @@ export default function Index() {
       id: crypto.randomUUID(),
       employeeName: name.trim(),
       badgeId: badgeId.trim(),
+      workPost: workPost.trim(),
       type: "salida",
       timestamp: new Date().toISOString(),
       location: pendingLocation!,
