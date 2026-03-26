@@ -26,7 +26,7 @@ export async function addEntry(entry: TimeEntry): Promise<TimeEntry[]> {
     notes: entry.notes ?? null,
     signature: entry.signature ?? null,
     gdpr_accepted: true,
-  });
+  } as any);
 
   // Also keep localStorage as offline fallback
   const local = getLocalEntries();
