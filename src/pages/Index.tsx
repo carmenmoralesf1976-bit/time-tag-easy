@@ -3,6 +3,7 @@ import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
+import { Link } from "react-router-dom";
 import SignaturePad from "@/components/SignaturePad";
 import { getEntries, addEntry, requestLocation, exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { toast } from "sonner";
@@ -244,6 +245,14 @@ export default function Index() {
         >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Últimos fichajes</h2>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/inspector"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Panel Inspector
+              </Link>
             {entries.length > 0 && (
               <button
                 onClick={() => exportToCSV(entries)}
@@ -253,6 +262,7 @@ export default function Index() {
                 Exportar CSV
               </button>
             )}
+            </div>
           </div>
           <HistoryTable entries={entries} />
         </div>
