@@ -262,6 +262,7 @@ export default function Index() {
                 Exportar CSV
               </button>
             )}
+            </div>
           </div>
           <HistoryTable entries={entries} />
         </div>
