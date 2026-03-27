@@ -69,13 +69,44 @@ export default function Inspector() {
               Actualizar
             </button>
             {entries.length > 0 && (
-              <button
-                onClick={() => exportToCSV(entries)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                <FileDown className="h-3.5 w-3.5" />
-                Exportar CSV
-              </button>
+              <>
+                <button
+                  onClick={() => exportToCSV(entries)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                >
+                  <FileDown className="h-3.5 w-3.5" />
+                  Exportar CSV
+                </button>
+                <button
+                  onClick={() => {
+                    const now = new Date();
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    const weekEntries = entries.filter((e) => new Date(e.timestamp) >= weekAgo);
+                    const rows = (weekEntries.length > 0 ? weekEntries : entries).map((e) => {
+                      const d = new Date(e.timestamp);
+                      return {
+                        Tipo: e.type === "entrada" ? "Entrada" : "Salida",
+                        Nombre: e.employeeName,
+                        "DNI/Placa": e.badgeId,
+                        Puesto: e.workPost || "",
+                        Fecha: d.toLocaleDateString("es-ES"),
+                        Hora: d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+                        Incidencia: e.notes || "",
+                        Firma: e.signature ? "Sí" : "No",
+                      };
+                    });
+                    const ws = XLSX.utils.json_to_sheet(rows);
+                    ws["!cols"] = [{ wch: 10 }, { wch: 25 }, { wch: 15 }, { wch: 30 }, { wch: 12 }, { wch: 10 }, { wch: 30 }, { wch: 6 }];
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "Fichajes");
+                    XLSX.writeFile(wb, `informe_fichajes_${now.toISOString().slice(0, 10)}.xlsx`);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                  Descargar informe en Excel
+                </button>
+              </>
             )}
           </div>
         </header>
