@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2 } from "lucide-react";
+import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import { Link } from "react-router-dom";
 import SignaturePad from "@/components/SignaturePad";
+import { supabase } from "@/integrations/supabase/client";
 import { getEntries, addEntry, requestLocation, exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { toast } from "sonner";
 
@@ -19,6 +20,22 @@ export default function Index() {
   const [showSignature, setShowSignature] = useState(false);
   const [pendingLocation, setPendingLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [gdprAccepted, setGdprAccepted] = useState(false);
+  const [todayAssignment, setTodayAssignment] = useState<{ work_post: string; shift_start: string; shift_end: string } | null>(null);
+
+  // Fetch today's assignment based on badge_id
+  useEffect(() => {
+    if (!badgeId.trim()) { setTodayAssignment(null); return; }
+    const today = new Date().toISOString().slice(0, 10);
+    supabase
+      .from("monthly_schedule")
+      .select("work_post, shift_start, shift_end")
+      .eq("badge_id", badgeId.trim())
+      .eq("schedule_date", today)
+      .maybeSingle()
+      .then(({ data }) => {
+        setTodayAssignment(data as any ?? null);
+      });
+  }, [badgeId]);
 
   useEffect(() => {
     getEntries().then(setEntries);
