@@ -149,6 +149,22 @@ export default function Index() {
           </p>
         </header>
 
+        {/* Today's assignment banner */}
+        {todayAssignment && (
+          <div
+            className="mb-6 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3"
+            style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 50ms forwards", opacity: 0 }}
+          >
+            <CalendarDays className="h-5 w-5 text-primary shrink-0" />
+            <div className="text-sm">
+              <span className="font-semibold text-foreground">Tu servicio de hoy es en {todayAssignment.work_post}</span>
+              <span className="text-muted-foreground ml-2">
+                ({todayAssignment.shift_start.slice(0, 5)} – {todayAssignment.shift_end.slice(0, 5)})
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Employee fields */}
         <div
           className="mb-6 space-y-3"
