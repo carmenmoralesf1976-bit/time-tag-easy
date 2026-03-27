@@ -172,10 +172,10 @@ export default function Index() {
                 <SelectValue placeholder="Selecciona un puesto" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Puesto A - Guadalajara">Puesto A - Guadalajara</SelectItem>
-                <SelectItem value="Puesto B - Guadalajara">Puesto B - Guadalajara</SelectItem>
-                <SelectItem value="Sede Central PYCSECA">Sede Central PYCSECA</SelectItem>
-                <SelectItem value="Otros">Otros</SelectItem>
+                <SelectItem value="Logística Guadalajara">Logística Guadalajara</SelectItem>
+                <SelectItem value="Planta Industrial Castilla">Planta Industrial Castilla</SelectItem>
+                <SelectItem value="Centro Comercial Azuqueca">Centro Comercial Azuqueca</SelectItem>
+                <SelectItem value="Sede PYCSECA">Sede PYCSECA</SelectItem>
               </SelectContent>
             </Select>
           </div>
