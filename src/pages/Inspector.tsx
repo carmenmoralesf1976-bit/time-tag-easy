@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet } from "lucide-react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
@@ -59,6 +59,13 @@ export default function Inspector() {
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               ← Volver a fichaje
+            </Link>
+            <Link
+              to="/cuadrante"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              Cuadrante
             </Link>
             <button
               onClick={fetchAll}
