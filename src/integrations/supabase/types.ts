@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      monthly_schedule: {
+        Row: {
+          badge_id: string
+          created_at: string
+          employee_name: string
+          id: string
+          notes: string | null
+          schedule_date: string
+          shift_end: string
+          shift_start: string
+          work_post: string
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string
+          employee_name: string
+          id?: string
+          notes?: string | null
+          schedule_date: string
+          shift_end?: string
+          shift_start?: string
+          work_post: string
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string
+          employee_name?: string
+          id?: string
+          notes?: string | null
+          schedule_date?: string
+          shift_end?: string
+          shift_start?: string
+          work_post?: string
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
           badge_id: string
