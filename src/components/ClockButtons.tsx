@@ -33,7 +33,7 @@ export default function ClockButtons({ onClock, onDelay, loading, disabled }: Cl
       <button
         onClick={onDelay}
         disabled={isDisabled}
-        className="mx-auto flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-500/20 transition-all hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="mx-auto flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-md shadow-accent/20 transition-all hover:bg-accent/80 hover:shadow-lg hover:shadow-accent/30 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <AlertCircle className="h-4 w-4" />
         Avisar Retraso
