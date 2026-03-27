@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays } from "lucide-react";
+import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
@@ -45,12 +46,10 @@ export default function Inspector() {
         {/* Header */}
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary">
-              <ShieldCheck className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img src={logoImg} alt="PYCSECA" className="h-12 w-auto object-contain" />
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Panel del Inspector</h1>
-              <p className="text-xs text-muted-foreground">Registro completo de fichajes</p>
+              <h1 className="text-xl font-bold tracking-tight text-primary">Panel del Inspector</h1>
+              <p className="text-xs text-muted-foreground">PYCSECA - Control de Presencia</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

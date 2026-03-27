@@ -16,7 +16,7 @@ export default function ClockButtons({ onClock, onDelay, loading, disabled }: Cl
         <button
           onClick={() => onClock("entrada")}
           disabled={isDisabled}
-          className="clock-btn-enter flex flex-col items-center justify-center gap-3 rounded-2xl p-8 text-lg font-semibold shadow-lg shadow-[hsl(var(--success)/0.2)] transition-all duration-200 ease-out hover:shadow-xl hover:shadow-[hsl(var(--success)/0.3)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="clock-btn-enter flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 p-8 text-lg font-semibold shadow-lg shadow-[hsl(var(--success)/0.2)] transition-all duration-200 ease-out hover:shadow-xl hover:shadow-[hsl(var(--success)/0.3)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <LogIn className="h-8 w-8" strokeWidth={2.2} />
           Entrada
@@ -24,7 +24,7 @@ export default function ClockButtons({ onClock, onDelay, loading, disabled }: Cl
         <button
           onClick={() => onClock("salida")}
           disabled={isDisabled}
-          className="clock-btn-exit flex flex-col items-center justify-center gap-3 rounded-2xl p-8 text-lg font-semibold shadow-lg shadow-destructive/20 transition-all duration-200 ease-out hover:shadow-xl hover:shadow-destructive/30 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="clock-btn-exit flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 p-8 text-lg font-semibold shadow-lg shadow-destructive/20 transition-all duration-200 ease-out hover:shadow-xl hover:shadow-destructive/30 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <LogOut className="h-8 w-8" strokeWidth={2.2} />
           Salida

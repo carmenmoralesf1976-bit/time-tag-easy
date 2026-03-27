@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Clock, User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays } from "lucide-react";
+import { User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays } from "lucide-react";
+import logoImg from "@/assets/logo-pycseca.jpg";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
@@ -134,11 +135,9 @@ export default function Index() {
           className="mb-8 text-center"
           style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) forwards" }}
         >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-            <Clock className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ lineHeight: "1.1" }}>
-            Control de Fichaje
+          <img src={logoImg} alt="PYCSECA Seguridad" className="mx-auto mb-4 h-16 w-auto object-contain" />
+          <h1 className="text-2xl font-bold tracking-tight text-primary" style={{ lineHeight: "1.1" }}>
+            PYCSECA - Control de Presencia
           </h1>
           <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Seguridad Privada</p>
           <p className="mt-2 text-sm text-muted-foreground">
