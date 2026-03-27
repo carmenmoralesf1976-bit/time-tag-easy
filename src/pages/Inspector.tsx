@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ShieldCheck, RefreshCw, FileDown } from "lucide-react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { Link } from "react-router-dom";
