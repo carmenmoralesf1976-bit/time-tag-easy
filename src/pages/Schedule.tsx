@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { CalendarDays, Plus, Trash2, Upload, RefreshCw } from "lucide-react";
+import logoImg from "@/assets/logo-pycseca.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -146,12 +147,10 @@ export default function Schedule() {
         {/* Header */}
         <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary">
-              <CalendarDays className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <img src={logoImg} alt="PYCSECA" className="h-12 w-auto object-contain" />
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Cuadrante Mensual</h1>
-              <p className="text-xs text-muted-foreground">Asignación de puestos y horarios</p>
+              <h1 className="text-xl font-bold tracking-tight text-primary">Cuadrante Mensual</h1>
+              <p className="text-xs text-muted-foreground">PYCSECA - Control de Presencia</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
