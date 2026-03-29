@@ -225,6 +225,20 @@ export default function Inspector() {
                 </button>
               </>
             )}
+            <input
+              ref={scheduleFileRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              className="hidden"
+              onChange={handleScheduleImport}
+            />
+            <button
+              onClick={() => scheduleFileRef.current?.click()}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Cargar Cuadrante (Excel/CSV)
+            </button>
           </div>
         </header>
 
