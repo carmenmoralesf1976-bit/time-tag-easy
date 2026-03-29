@@ -298,6 +298,13 @@ export default function Index() {
           </div>
           <HistoryTable entries={entries} />
         </div>
+
+        {/* LOPD footer */}
+        <footer className="mt-8 pb-6 text-center">
+          <p className="text-[11px] leading-relaxed text-muted-foreground/60 max-w-md mx-auto">
+            Al fichar, el trabajador acepta el registro de su ubicación GPS exclusivamente para fines de control laboral según la LOPD.
+          </p>
+        </footer>
       </div>
 
       {showSignature && (
