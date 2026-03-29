@@ -22,6 +22,71 @@ export default function Inspector() {
   const [passwordError, setPasswordError] = useState(false);
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const scheduleFileRef = useRef<HTMLInputElement>(null);
+
+  const handleScheduleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+
+    if (isExcel) {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const jsonRows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
+        await processScheduleRows(jsonRows.map((r) => ({
+          employee_name: r["nombre"] || r["Nombre"] || r["employee_name"] || "",
+          badge_id: String(r["dni"] || r["DNI"] || r["badge_id"] || r["DNI/Placa"] || ""),
+          work_post: r["puesto"] || r["Puesto"] || r["work_post"] || WORK_POSTS[0],
+          schedule_date: r["fecha"] || r["Fecha"] || r["schedule_date"] || "",
+          shift_start: r["hora_inicio"] || r["Hora Inicio"] || r["shift_start"] || "08:00",
+          shift_end: r["hora_fin"] || r["Hora Fin"] || r["shift_end"] || "20:00",
+          notes: r["notas"] || r["Notas"] || r["notes"] || null,
+        })));
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const text = ev.target?.result as string;
+        const lines = text.split("\n").filter((l) => l.trim());
+        if (lines.length < 2) { toast.error("CSV vacío o sin datos"); return; }
+        const rows: any[] = [];
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(/[,;]/).map((c) => c.trim().replace(/^"|"$/g, ""));
+          if (cols.length < 4) continue;
+          rows.push({
+            employee_name: cols[0],
+            badge_id: cols[1],
+            work_post: cols[2] || WORK_POSTS[0],
+            schedule_date: cols[3],
+            shift_start: cols[4] || "08:00",
+            shift_end: cols[5] || "20:00",
+            notes: cols[6] || null,
+          });
+        }
+        await processScheduleRows(rows);
+      };
+      reader.readAsText(file);
+    }
+    e.target.value = "";
+  };
+
+  const processScheduleRows = async (rows: any[]) => {
+    const valid = rows.filter((r) => r.employee_name && r.badge_id && r.schedule_date);
+    if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
+    const { error } = await supabase.from("monthly_schedule").upsert(valid, {
+      onConflict: "badge_id,schedule_date",
+    });
+    if (error) {
+      toast.error("Error al importar: " + error.message);
+    } else {
+      toast.success(`${valid.length} asignaciones importadas al cuadrante`);
+    }
+  };
 
   const fetchAll = async () => {
     setLoading(true);
