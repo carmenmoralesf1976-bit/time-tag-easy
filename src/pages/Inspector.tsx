@@ -1,10 +1,18 @@
-import { useState, useEffect } from "react";
-import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
+
+const WORK_POSTS = [
+  "Logística Guadalajara",
+  "Planta Industrial Castilla",
+  "Centro Comercial Azuqueca",
+  "Sede PYCSECA",
+];
 
 const INSPECTOR_PASSWORD = "admin123";
 
