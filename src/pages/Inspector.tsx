@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload } from "lucide-react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload, X, CheckCircle2 } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,16 @@ const WORK_POSTS = [
   "Sede PYCSECA",
 ];
 
+interface ParsedScheduleRow {
+  employee_name: string;
+  badge_id: string;
+  work_post: string;
+  schedule_date: string;
+  shift_start: string;
+  shift_end: string;
+  notes: string | null;
+}
+
 const INSPECTOR_PASSWORD = "admin123";
 
 export default function Inspector() {
@@ -23,21 +33,32 @@ export default function Inspector() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const scheduleFileRef = useRef<HTMLInputElement>(null);
+  const [previewRows, setPreviewRows] = useState<ParsedScheduleRow[] | null>(null);
+  const [importing, setImporting] = useState(false);
+
+  const parseRows = (rawRows: any[]): ParsedScheduleRow[] =>
+    rawRows.map((r) => ({
+      employee_name: r.employee_name || "",
+      badge_id: String(r.badge_id || ""),
+      work_post: r.work_post || WORK_POSTS[0],
+      schedule_date: r.schedule_date || "",
+      shift_start: r.shift_start || "08:00",
+      shift_end: r.shift_end || "20:00",
+      notes: r.notes || null,
+    })).filter((r) => r.employee_name && r.badge_id && r.schedule_date);
 
   const handleScheduleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
-
     if (isExcel) {
       const reader = new FileReader();
-      reader.onload = async (ev) => {
+      reader.onload = (ev) => {
         const data = new Uint8Array(ev.target?.result as ArrayBuffer);
         const wb = XLSX.read(data, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const jsonRows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-        await processScheduleRows(jsonRows.map((r) => ({
+        const mapped = jsonRows.map((r) => ({
           employee_name: r["nombre"] || r["Nombre"] || r["employee_name"] || "",
           badge_id: String(r["dni"] || r["DNI"] || r["badge_id"] || r["DNI/Placa"] || ""),
           work_post: r["puesto"] || r["Puesto"] || r["work_post"] || WORK_POSTS[0],
@@ -45,12 +66,15 @@ export default function Inspector() {
           shift_start: r["hora_inicio"] || r["Hora Inicio"] || r["shift_start"] || "08:00",
           shift_end: r["hora_fin"] || r["Hora Fin"] || r["shift_end"] || "20:00",
           notes: r["notas"] || r["Notas"] || r["notes"] || null,
-        })));
+        }));
+        const valid = parseRows(mapped);
+        if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
+        setPreviewRows(valid);
       };
       reader.readAsArrayBuffer(file);
     } else {
       const reader = new FileReader();
-      reader.onload = async (ev) => {
+      reader.onload = (ev) => {
         const text = ev.target?.result as string;
         const lines = text.split("\n").filter((l) => l.trim());
         if (lines.length < 2) { toast.error("CSV vacío o sin datos"); return; }
@@ -59,33 +83,34 @@ export default function Inspector() {
           const cols = lines[i].split(/[,;]/).map((c) => c.trim().replace(/^"|"$/g, ""));
           if (cols.length < 4) continue;
           rows.push({
-            employee_name: cols[0],
-            badge_id: cols[1],
-            work_post: cols[2] || WORK_POSTS[0],
-            schedule_date: cols[3],
-            shift_start: cols[4] || "08:00",
-            shift_end: cols[5] || "20:00",
+            employee_name: cols[0], badge_id: cols[1],
+            work_post: cols[2] || WORK_POSTS[0], schedule_date: cols[3],
+            shift_start: cols[4] || "08:00", shift_end: cols[5] || "20:00",
             notes: cols[6] || null,
           });
         }
-        await processScheduleRows(rows);
+        const valid = parseRows(rows);
+        if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
+        setPreviewRows(valid);
       };
       reader.readAsText(file);
     }
     e.target.value = "";
   };
 
-  const processScheduleRows = async (rows: any[]) => {
-    const valid = rows.filter((r) => r.employee_name && r.badge_id && r.schedule_date);
-    if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
-    const { error } = await supabase.from("monthly_schedule").upsert(valid, {
+  const confirmImport = async () => {
+    if (!previewRows || previewRows.length === 0) return;
+    setImporting(true);
+    const { error } = await supabase.from("monthly_schedule").upsert(previewRows, {
       onConflict: "badge_id,schedule_date",
     });
     if (error) {
       toast.error("Error al importar: " + error.message);
     } else {
-      toast.success(`${valid.length} asignaciones importadas al cuadrante`);
+      toast.success(`${previewRows.length} asignaciones importadas al cuadrante`);
+      setPreviewRows(null);
     }
+    setImporting(false);
   };
 
   const fetchAll = async () => {
@@ -256,6 +281,64 @@ export default function Inspector() {
             </div>
           ))}
         </div>
+
+        {/* Preview de cuadrante importado */}
+        {previewRows && previewRows.length > 0 && (
+          <div className="mb-6 rounded-xl border-2 border-accent bg-accent/5 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-sm font-bold text-foreground">
+                  Vista previa del cuadrante ({previewRows.length} asignaciones)
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {new Set(previewRows.map((r) => r.employee_name)).size} vigilante(s) detectado(s)
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPreviewRows(null)}
+                  className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary"
+                >
+                  <X className="h-3.5 w-3.5" /> Cancelar
+                </button>
+                <button
+                  onClick={confirmImport}
+                  disabled={importing}
+                  className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  {importing ? "Importando…" : "Confirmar importación"}
+                </button>
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-card overflow-x-auto max-h-64 overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0">
+                  <tr className="border-b border-border bg-secondary/50">
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Vigilante</th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">DNI/Placa</th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Puesto</th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Fecha</th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Turno</th>
+                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Notas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewRows.map((r, i) => (
+                    <tr key={i} className="border-b border-border/50 last:border-0">
+                      <td className="px-3 py-2 font-medium">{r.employee_name}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{r.badge_id}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{r.work_post}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{r.schedule_date}</td>
+                      <td className="px-3 py-2 font-mono text-muted-foreground">{r.shift_start} – {r.shift_end}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{r.notes || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Table */}
         <div className="rounded-xl border border-border bg-card overflow-x-auto">
