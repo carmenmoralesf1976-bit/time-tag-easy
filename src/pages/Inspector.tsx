@@ -15,40 +15,37 @@ export default function Inspector() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordInput === INSPECTOR_PASSWORD) {
-      setAuthenticated(true);
-      setPasswordError(false);
-    } else {
-      setPasswordError(true);
+  const fetchAll = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("time_entries")
+      .select("*")
+      .order("timestamp", { ascending: false })
+      .limit(500);
+
+    if (data) {
+      setEntries(
+        data.map((r: any) => ({
+          id: r.id,
+          employeeName: r.employee_name,
+          badgeId: r.badge_id,
+          workPost: r.work_post ?? "",
+          type: r.type as "entrada" | "salida",
+          timestamp: r.timestamp,
+          location: { lat: r.latitude, lng: r.longitude },
+          notes: r.notes ?? undefined,
+          signature: r.signature ?? undefined,
+        }))
+      );
     }
+    setLoading(false);
   };
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <form onSubmit={handleLogin} className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-lg text-center">
-          <img src={logoImg} alt="PYCSECA" className="mx-auto mb-4 h-16 w-auto object-contain" />
-          <h1 className="text-lg font-bold text-primary mb-1">Panel del Inspector</h1>
-          <p className="text-xs text-muted-foreground mb-6">Introduce la contraseña para acceder</p>
-          <input
-            type="password"
-            value={passwordInput}
-            onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
-            placeholder="Contraseña"
-            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 mb-3"
-          />
-          {passwordError && <p className="text-xs text-destructive mb-3">Contraseña incorrecta</p>}
-          <button type="submit" className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-            Acceder
-          </button>
-        </form>
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchAll();
+  }, []);
 
-  const fetchAll = async () => {
+  const handleLogin = (e: React.FormEvent) => {
     setLoading(true);
     const { data } = await supabase
       .from("time_entries")
