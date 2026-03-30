@@ -73,9 +73,7 @@ export default function Inspector() {
       };
       reader.readAsArrayBuffer(file);
     } else {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const text = ev.target?.result as string;
+      const tryParseCSV = (text: string) => {
         const lines = text.split("\n").filter((l) => l.trim());
         if (lines.length < 2) { toast.error("CSV vacío o sin datos"); return; }
         const rows: any[] = [];
@@ -93,7 +91,19 @@ export default function Inspector() {
         if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
         setPreviewRows(valid);
       };
-      reader.readAsText(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string;
+        // Si hay caracteres corruptos, reintentar con ISO-8859-1
+        if (text.includes("�")) {
+          const reader2 = new FileReader();
+          reader2.onload = (ev2) => tryParseCSV(ev2.target?.result as string);
+          reader2.readAsText(file, "ISO-8859-1");
+        } else {
+          tryParseCSV(text);
+        }
+      };
+      reader.readAsText(file, "UTF-8");
     }
     e.target.value = "";
   };
