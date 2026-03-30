@@ -342,7 +342,7 @@ function findDayHeader(rows: PdfRow[]) {
         .sort((a, b) => a.x - b.x);
 
       const uniqueDayItems = dayItems.filter((item, index, list) => index === 0 || Math.abs(item.x - list[index - 1].x) > 2);
-      return uniqueDayItems.length >= 7 ? { y: row.y, dayItems: uniqueDayItems } : null;
+      return uniqueDayItems.length >= 2 ? { y: row.y, dayItems: uniqueDayItems } : null;
     })
     .filter((candidate): candidate is { y: number; dayItems: Array<PdfToken & { day: number }> } => Boolean(candidate))
     .sort((a, b) => b.dayItems.length - a.dayItems.length || b.y - a.y);
