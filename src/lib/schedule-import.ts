@@ -220,16 +220,24 @@ async function parsePdfSchedule(bytes: Uint8Array, options: ParseScheduleOptions
   for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
     const page = await document.getPage(pageNumber);
     const textContent = await page.getTextContent();
-    const tokens: PdfToken[] = textContent.items
-      .filter((item): item is { str: string; transform: number[]; width?: number; height?: number } => "str" in item)
-      .map((item) => ({
-        str: sanitizeDisplayText(item.str),
-        x: item.transform[4],
-        y: item.transform[5],
-        width: Number(item.width ?? 0),
-        height: Math.abs(Number(item.height ?? item.transform[3] ?? 0)),
-        page: pageNumber,
-      }))
+    const tokens: PdfToken[] = (textContent.items as Array<Record<string, unknown>>)
+      .flatMap((item) => {
+        const str = typeof item.str === "string" ? item.str : "";
+        const transform = Array.isArray(item.transform) ? (item.transform as number[]) : null;
+
+        if (!str || !transform || transform.length < 6) {
+          return [];
+        }
+
+        return [{
+          str: sanitizeDisplayText(str),
+          x: Number(transform[4] ?? 0),
+          y: Number(transform[5] ?? 0),
+          width: Number(item.width ?? 0),
+          height: Math.abs(Number(item.height ?? transform[3] ?? 0)),
+          page: pageNumber,
+        } satisfies PdfToken];
+      })
       .filter((item) => item.str);
 
     const pageText = tokens.map((token) => token.str).join(" ");

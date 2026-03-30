@@ -4,6 +4,7 @@ import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
+import { normalizePersonName, parseScheduleFile, type ParsedScheduleRow } from "@/lib/schedule-import";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -13,16 +14,6 @@ const WORK_POSTS = [
   "Centro Comercial Azuqueca",
   "Sede PYCSECA",
 ];
-
-interface ParsedScheduleRow {
-  employee_name: string;
-  badge_id: string;
-  work_post: string;
-  schedule_date: string;
-  shift_start: string;
-  shift_end: string;
-  notes: string | null;
-}
 
 const INSPECTOR_PASSWORD = "admin123";
 
@@ -35,77 +26,39 @@ export default function Inspector() {
   const scheduleFileRef = useRef<HTMLInputElement>(null);
   const [previewRows, setPreviewRows] = useState<ParsedScheduleRow[] | null>(null);
   const [importing, setImporting] = useState(false);
+  const [processingFile, setProcessingFile] = useState(false);
 
-  const parseRows = (rawRows: any[]): ParsedScheduleRow[] =>
-    rawRows.map((r) => ({
-      employee_name: r.employee_name || "",
-      badge_id: String(r.badge_id || ""),
-      work_post: r.work_post || WORK_POSTS[0],
-      schedule_date: r.schedule_date || "",
-      shift_start: r.shift_start || "08:00",
-      shift_end: r.shift_end || "20:00",
-      notes: r.notes || null,
-    })).filter((r) => r.employee_name && r.badge_id && r.schedule_date);
-
-  const handleScheduleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleScheduleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
-    if (isExcel) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const data = new Uint8Array(ev.target?.result as ArrayBuffer);
-        const wb = XLSX.read(data, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const jsonRows: any[] = XLSX.utils.sheet_to_json(ws, { defval: "" });
-        const mapped = jsonRows.map((r) => ({
-          employee_name: r["nombre"] || r["Nombre"] || r["employee_name"] || "",
-          badge_id: String(r["dni"] || r["DNI"] || r["badge_id"] || r["DNI/Placa"] || ""),
-          work_post: r["puesto"] || r["Puesto"] || r["work_post"] || WORK_POSTS[0],
-          schedule_date: r["fecha"] || r["Fecha"] || r["schedule_date"] || "",
-          shift_start: r["hora_inicio"] || r["Hora Inicio"] || r["shift_start"] || "08:00",
-          shift_end: r["hora_fin"] || r["Hora Fin"] || r["shift_end"] || "20:00",
-          notes: r["notas"] || r["Notas"] || r["notes"] || null,
-        }));
-        const valid = parseRows(mapped);
-        if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
-        setPreviewRows(valid);
-      };
-      reader.readAsArrayBuffer(file);
-    } else {
-      const tryParseCSV = (text: string) => {
-        const lines = text.split("\n").filter((l) => l.trim());
-        if (lines.length < 2) { toast.error("CSV vacío o sin datos"); return; }
-        const rows: any[] = [];
-        for (let i = 1; i < lines.length; i++) {
-          const cols = lines[i].split(/[,;]/).map((c) => c.trim().replace(/^"|"$/g, ""));
-          if (cols.length < 4) continue;
-          rows.push({
-            employee_name: cols[0], badge_id: cols[1],
-            work_post: cols[2] || WORK_POSTS[0], schedule_date: cols[3],
-            shift_start: cols[4] || "08:00", shift_end: cols[5] || "20:00",
-            notes: cols[6] || null,
-          });
-        }
-        const valid = parseRows(rows);
-        if (valid.length === 0) { toast.error("No se encontraron filas válidas"); return; }
-        setPreviewRows(valid);
-      };
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const text = ev.target?.result as string;
-        // Si hay caracteres corruptos, reintentar con ISO-8859-1
-        if (text.includes("�")) {
-          const reader2 = new FileReader();
-          reader2.onload = (ev2) => tryParseCSV(ev2.target?.result as string);
-          reader2.readAsText(file, "ISO-8859-1");
-        } else {
-          tryParseCSV(text);
-        }
-      };
-      reader.readAsText(file, "UTF-8");
-    }
     e.target.value = "";
+    if (!file) return;
+    try {
+      setProcessingFile(true);
+      const badgeLookup = new Map<string, string>();
+      entries.forEach((entry) => {
+        const normalizedName = normalizePersonName(entry.employeeName);
+        if (normalizedName && entry.badgeId && !badgeLookup.has(normalizedName)) {
+          badgeLookup.set(normalizedName, entry.badgeId);
+        }
+      });
+
+      const parsedRows = await parseScheduleFile(file, {
+        workPosts: WORK_POSTS,
+        badgeLookup,
+      });
+
+      if (parsedRows.length === 0) {
+        toast.error("No se encontraron filas válidas en el archivo");
+        return;
+      }
+
+      setPreviewRows(parsedRows);
+      toast.success(`${parsedRows.length} asignaciones detectadas en ${file.name}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al leer el cuadrante");
+    } finally {
+      setProcessingFile(false);
+    }
   };
 
   const confirmImport = async () => {
@@ -263,16 +216,17 @@ export default function Inspector() {
             <input
               ref={scheduleFileRef}
               type="file"
-              accept=".csv,.xlsx,.xls"
+              accept=".csv,.xlsx,.xls,.pdf"
               className="hidden"
               onChange={handleScheduleImport}
             />
             <button
               onClick={() => scheduleFileRef.current?.click()}
+              disabled={processingFile}
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <Upload className="h-3.5 w-3.5" />
-              Cargar Cuadrante (Excel/CSV)
+              {processingFile ? "Leyendo cuadrante…" : "Cargar Cuadrante (PDF/Excel/CSV)"}
             </button>
           </div>
         </header>
