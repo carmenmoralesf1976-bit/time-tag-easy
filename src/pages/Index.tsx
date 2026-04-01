@@ -199,20 +199,12 @@ export default function Index() {
             />
           </div>
           <div>
-            <label htmlFor="work-post" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Building2 className="h-4 w-4" /> Puesto de trabajo
+            <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Building2 className="h-4 w-4" /> Centro de servicio
             </label>
-            <Select value={workPost} onValueChange={(val) => setWorkPost(val)}>
-              <SelectTrigger className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium ring-ring/20 focus:ring-2 focus:border-foreground/20 h-auto">
-                <SelectValue placeholder="Selecciona un puesto" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Logística Guadalajara">Logística Guadalajara</SelectItem>
-                <SelectItem value="Planta Industrial Castilla">Planta Industrial Castilla</SelectItem>
-                <SelectItem value="Centro Comercial Azuqueca">Centro Comercial Azuqueca</SelectItem>
-                <SelectItem value="Sede PYCSECA">Sede PYCSECA</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-base font-medium text-foreground">
+              {WORK_POST}
+            </div>
           </div>
         </div>
 
