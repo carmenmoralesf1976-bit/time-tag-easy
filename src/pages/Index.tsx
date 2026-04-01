@@ -174,14 +174,20 @@ export default function Index() {
             <label htmlFor="employee-name" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <User className="h-4 w-4" /> Nombre del vigilante
             </label>
-            <input
-              id="employee-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Carlos López"
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
-            />
+            <Select value={name} onValueChange={(val) => {
+              setName(val);
+              const guard = GUARDS.find(g => g.name === val);
+              if (guard) setBadgeId(guard.badgeId);
+            }}>
+              <SelectTrigger className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium ring-ring/20 focus:ring-2 focus:border-foreground/20 h-auto">
+                <SelectValue placeholder="Selecciona un vigilante" />
+              </SelectTrigger>
+              <SelectContent>
+                {GUARDS.map(g => (
+                  <SelectItem key={g.badgeId} value={g.name}>{g.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label htmlFor="badge-id" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
