@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GUARDS } from "@/lib/guards";
+import { GUARDS, WORK_POST } from "@/lib/guards";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import { Link } from "react-router-dom";
