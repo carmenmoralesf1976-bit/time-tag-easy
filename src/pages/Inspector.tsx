@@ -25,53 +25,7 @@ export default function Inspector() {
   const [loading, setLoading] = useState(true);
   const scheduleFileRef = useRef<HTMLInputElement>(null);
 
-  const handleScheduleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-    try {
-      setProcessingFile(true);
-      const badgeLookup = new Map<string, string>();
-      entries.forEach((entry) => {
-        const normalizedName = normalizePersonName(entry.employeeName);
-        if (normalizedName && entry.badgeId && !badgeLookup.has(normalizedName)) {
-          badgeLookup.set(normalizedName, entry.badgeId);
-        }
-      });
 
-      const parsedRows = await parseScheduleFile(file, {
-        workPosts: WORK_POSTS,
-        badgeLookup,
-      });
-
-      if (parsedRows.length === 0) {
-        toast.error("No se encontraron filas válidas en el archivo");
-        return;
-      }
-
-      setPreviewRows(parsedRows);
-      toast.success(`${parsedRows.length} asignaciones detectadas en ${file.name}`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error al leer el cuadrante");
-    } finally {
-      setProcessingFile(false);
-    }
-  };
-
-  const confirmImport = async () => {
-    if (!previewRows || previewRows.length === 0) return;
-    setImporting(true);
-    const { error } = await supabase.from("monthly_schedule").upsert(previewRows, {
-      onConflict: "badge_id,schedule_date",
-    });
-    if (error) {
-      toast.error("Error al importar: " + error.message);
-    } else {
-      toast.success(`${previewRows.length} asignaciones importadas al cuadrante`);
-      setPreviewRows(null);
-    }
-    setImporting(false);
-  };
 
   const fetchAll = async () => {
     setLoading(true);
