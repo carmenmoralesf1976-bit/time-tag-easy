@@ -197,9 +197,9 @@ export default function Index() {
               id="badge-id"
               type="text"
               value={badgeId}
-              onChange={(e) => setBadgeId(e.target.value)}
-              placeholder="Ej: 12345678A"
-              className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none ring-ring/20 transition-shadow focus:ring-2 focus:border-foreground/20"
+              readOnly
+              placeholder="Se rellena automáticamente"
+              className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none cursor-not-allowed"
             />
           </div>
           <div>
