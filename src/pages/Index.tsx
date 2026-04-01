@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GUARDS } from "@/lib/guards";
+import { GUARDS, WORK_POST } from "@/lib/guards";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import { Link } from "react-router-dom";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 export default function Index() {
   const [name, setName] = useState(() => localStorage.getItem("employee-name") ?? "");
   const [badgeId, setBadgeId] = useState(() => localStorage.getItem("employee-badge") ?? "");
-  const [workPost, setWorkPost] = useState(() => localStorage.getItem("employee-work-post") ?? "");
+  const workPost = WORK_POST;
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,10 +57,6 @@ export default function Index() {
       toast.error("Introduce tu nº de placa o DNI");
       return false;
     }
-    if (!workPost.trim()) {
-      toast.error("Introduce tu puesto de trabajo");
-      return false;
-    }
     if (!gdprAccepted) {
       toast.error("Debes aceptar la política de protección de datos para fichar");
       return false;
@@ -73,7 +69,7 @@ export default function Index() {
     setLoading(true);
     localStorage.setItem("employee-name", name.trim());
     localStorage.setItem("employee-badge", badgeId.trim());
-    localStorage.setItem("employee-work-post", workPost.trim());
+    
 
     const location = await requestLocation();
     if (!location) {
@@ -140,7 +136,7 @@ export default function Index() {
           <h1 className="text-2xl font-bold tracking-tight text-primary" style={{ lineHeight: "1.1" }}>
             PYCSECA - Control de Presencia
           </h1>
-          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Seguridad Privada</p>
+          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Kuehne Nagel Cabanillas · Guadalajara</p>
           <p className="mt-2 text-sm text-muted-foreground">
             {now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </p>
@@ -203,20 +199,12 @@ export default function Index() {
             />
           </div>
           <div>
-            <label htmlFor="work-post" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Building2 className="h-4 w-4" /> Puesto de trabajo
+            <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Building2 className="h-4 w-4" /> Centro de servicio
             </label>
-            <Select value={workPost} onValueChange={(val) => setWorkPost(val)}>
-              <SelectTrigger className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium ring-ring/20 focus:ring-2 focus:border-foreground/20 h-auto">
-                <SelectValue placeholder="Selecciona un puesto" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Logística Guadalajara">Logística Guadalajara</SelectItem>
-                <SelectItem value="Planta Industrial Castilla">Planta Industrial Castilla</SelectItem>
-                <SelectItem value="Centro Comercial Azuqueca">Centro Comercial Azuqueca</SelectItem>
-                <SelectItem value="Sede PYCSECA">Sede PYCSECA</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-base font-medium text-foreground">
+              {WORK_POST}
+            </div>
           </div>
         </div>
 

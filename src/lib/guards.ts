@@ -3,6 +3,8 @@ export interface Guard {
   badgeId: string;
 }
 
+export const WORK_POST = "Kuehne Nagel Cabanillas";
+
 export const GUARDS: Guard[] = [
   { name: "MORALES FRAILE, MARIA DEL CARMEN", badgeId: "173857" },
   { name: "NAVARRO RAPOSO, JOAQUIN", badgeId: "37132" },
