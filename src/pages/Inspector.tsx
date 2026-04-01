@@ -246,63 +246,62 @@ export default function Inspector() {
           ))}
         </div>
 
-        {/* Preview de cuadrante importado */}
-        {previewRows && previewRows.length > 0 && (
-          <div className="mb-6 rounded-xl border-2 border-accent bg-accent/5 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h2 className="text-sm font-bold text-foreground">
-                  Vista previa del cuadrante ({previewRows.length} asignaciones)
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {new Set(previewRows.map((r) => r.employee_name)).size} vigilante(s) detectado(s)
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPreviewRows(null)}
-                  className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary"
-                >
-                  <X className="h-3.5 w-3.5" /> Cancelar
-                </button>
-                <button
-                  onClick={confirmImport}
-                  disabled={importing}
-                  className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  {importing ? "Importando…" : "Confirmar importación"}
-                </button>
-              </div>
-            </div>
-            <div className="rounded-lg border border-border bg-card overflow-x-auto max-h-64 overflow-y-auto">
-              <table className="w-full text-xs">
-                <thead className="sticky top-0">
-                  <tr className="border-b border-border bg-secondary/50">
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Vigilante</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">DNI/Placa</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Puesto</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Fecha</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Turno</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Notas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {previewRows.map((r, i) => (
-                    <tr key={i} className="border-b border-border/50 last:border-0">
-                      <td className="px-3 py-2 font-medium">{r.employee_name}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{r.badge_id}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{r.work_post}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{r.schedule_date}</td>
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{r.shift_start} – {r.shift_end}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{r.notes || "—"}</td>
+        {/* Today's guard status */}
+        <div className="mb-6">
+          <h2 className="flex items-center gap-2 text-sm font-bold text-foreground mb-3">
+            <Users className="h-4 w-4 text-primary" />
+            Control de fichajes de hoy
+          </h2>
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-secondary/50">
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Vigilante</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Placa</th>
+                  <th className="px-4 py-3 text-center font-semibold text-muted-foreground">Entrada</th>
+                  <th className="px-4 py-3 text-center font-semibold text-muted-foreground">Salida</th>
+                  <th className="px-4 py-3 text-center font-semibold text-muted-foreground">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {GUARDS.map((guard) => {
+                  const today = new Date().toLocaleDateString("es-ES");
+                  const guardEntries = entries.filter(
+                    (e) => e.badgeId === guard.badgeId && new Date(e.timestamp).toLocaleDateString("es-ES") === today
+                  );
+                  const entrada = guardEntries.find((e) => e.type === "entrada");
+                  const salida = guardEntries.find((e) => e.type === "salida");
+                  const hasClocked = !!entrada;
+                  return (
+                    <tr key={guard.badgeId} className="border-b border-border/50 last:border-0">
+                      <td className="px-4 py-3 font-medium">{guard.name}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{guard.badgeId}</td>
+                      <td className="px-4 py-3 text-center font-mono text-muted-foreground">
+                        {entrada
+                          ? new Date(entrada.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-muted-foreground">
+                        {salida
+                          ? new Date(salida.timestamp).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          hasClocked
+                            ? "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]"
+                            : "bg-destructive/15 text-destructive"
+                        }`}>
+                          {hasClocked ? "Fichado" : "Pendiente"}
+                        </span>
+                      </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
 
         {/* Table */}
         <div className="rounded-xl border border-border bg-card overflow-x-auto">
