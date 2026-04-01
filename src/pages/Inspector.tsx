@@ -99,7 +99,7 @@ export default function Inspector() {
             <img src={logoImg} alt="PYCSECA" className="h-12 w-auto object-contain" />
             <div>
               <h1 className="text-xl font-bold tracking-tight text-primary">Panel del Inspector</h1>
-              <p className="text-xs text-muted-foreground">PYCSECA - Control de Presencia</p>
+              <p className="text-xs text-muted-foreground">Kuehne Nagel Cabanillas · Guadalajara</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
