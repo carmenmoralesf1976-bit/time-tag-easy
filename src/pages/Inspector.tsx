@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload, X, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload, X, CheckCircle2, Users } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
-import { normalizePersonName, parseScheduleFile, type ParsedScheduleRow } from "@/lib/schedule-import";
+import { GUARDS } from "@/lib/guards";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
