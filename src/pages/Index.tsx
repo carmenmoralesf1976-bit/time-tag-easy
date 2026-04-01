@@ -136,7 +136,7 @@ export default function Index() {
           <h1 className="text-2xl font-bold tracking-tight text-primary" style={{ lineHeight: "1.1" }}>
             PYCSECA - Control de Presencia
           </h1>
-          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Seguridad Privada</p>
+          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Kuehne Nagel Cabanillas · Guadalajara</p>
           <p className="mt-2 text-sm text-muted-foreground">
             {now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </p>
