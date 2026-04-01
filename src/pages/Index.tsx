@@ -14,7 +14,7 @@ import { toast } from "sonner";
 export default function Index() {
   const [name, setName] = useState(() => localStorage.getItem("employee-name") ?? "");
   const [badgeId, setBadgeId] = useState(() => localStorage.getItem("employee-badge") ?? "");
-  const [workPost, setWorkPost] = useState(() => localStorage.getItem("employee-work-post") ?? "");
+  const workPost = WORK_POST;
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
