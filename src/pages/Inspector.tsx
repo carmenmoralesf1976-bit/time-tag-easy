@@ -24,9 +24,6 @@ export default function Inspector() {
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const scheduleFileRef = useRef<HTMLInputElement>(null);
-  const [previewRows, setPreviewRows] = useState<ParsedScheduleRow[] | null>(null);
-  const [importing, setImporting] = useState(false);
-  const [processingFile, setProcessingFile] = useState(false);
 
   const handleScheduleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
