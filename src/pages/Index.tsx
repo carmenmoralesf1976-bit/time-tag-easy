@@ -69,7 +69,7 @@ export default function Index() {
     setLoading(true);
     localStorage.setItem("employee-name", name.trim());
     localStorage.setItem("employee-badge", badgeId.trim());
-    localStorage.setItem("employee-work-post", workPost.trim());
+    
 
     const location = await requestLocation();
     if (!location) {
