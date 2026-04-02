@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload, X, CheckCircle2, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Users, LogOut } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,23 +7,12 @@ import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { GUARDS } from "@/lib/guards";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-
-const WORK_POSTS = [
-  "Logística Guadalajara",
-  "Planta Industrial Castilla",
-  "Centro Comercial Azuqueca",
-  "Sede PYCSECA",
-];
-
-const INSPECTOR_PASSWORD = "admin123";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Inspector() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState(false);
+  const { signOut } = useAuth();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const scheduleFileRef = useRef<HTMLInputElement>(null);
 
 
 
