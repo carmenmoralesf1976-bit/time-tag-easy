@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Upload, X, CheckCircle2, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShieldCheck, RefreshCw, FileDown, FileSpreadsheet, CalendarDays, Users, LogOut } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,23 +7,12 @@ import { exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { GUARDS } from "@/lib/guards";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-
-const WORK_POSTS = [
-  "Logística Guadalajara",
-  "Planta Industrial Castilla",
-  "Centro Comercial Azuqueca",
-  "Sede PYCSECA",
-];
-
-const INSPECTOR_PASSWORD = "admin123";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Inspector() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [passwordError, setPasswordError] = useState(false);
+  const { signOut } = useAuth();
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const scheduleFileRef = useRef<HTMLInputElement>(null);
 
 
 
@@ -57,39 +46,6 @@ export default function Inspector() {
     fetchAll();
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (passwordInput === INSPECTOR_PASSWORD) {
-      setAuthenticated(true);
-      setPasswordError(false);
-    } else {
-      setPasswordError(true);
-    }
-  };
-
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <form onSubmit={handleLogin} className="w-full max-w-sm rounded-xl border border-border bg-card p-8 shadow-lg text-center">
-          <img src={logoImg} alt="PYCSECA" className="mx-auto mb-4 h-16 w-auto object-contain" />
-          <h1 className="text-lg font-bold text-primary mb-1">Panel del Inspector</h1>
-          <p className="text-xs text-muted-foreground mb-6">Introduce la contraseña para acceder</p>
-          <input
-            type="password"
-            value={passwordInput}
-            onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(false); }}
-            placeholder="Contraseña"
-            className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 mb-3"
-          />
-          {passwordError && <p className="text-xs text-destructive mb-3">Contraseña incorrecta</p>}
-          <button type="submit" className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-            Acceder
-          </button>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
@@ -103,12 +59,13 @@ export default function Inspector() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            <button
+              onClick={signOut}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
             >
-              ← Volver a fichaje
-            </Link>
+              <LogOut className="h-3.5 w-3.5" />
+              Cerrar sesión
+            </button>
             <Link
               to="/cuadrante"
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"

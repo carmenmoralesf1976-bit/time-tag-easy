@@ -1,20 +1,24 @@
 import { useState, useEffect } from "react";
-import { User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays } from "lucide-react";
+import { User, BadgeCheck, FileDown, AlertTriangle, ShieldCheck, Building2, CalendarDays, LogOut } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GUARDS, WORK_POST } from "@/lib/guards";
 import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
-import { Link } from "react-router-dom";
 import SignaturePad from "@/components/SignaturePad";
 import { supabase } from "@/integrations/supabase/client";
 import { getEntries, addEntry, requestLocation, exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Index() {
-  const [name, setName] = useState(() => localStorage.getItem("employee-name") ?? "");
-  const [badgeId, setBadgeId] = useState("");
+  const { badgeId: authBadgeId, signOut } = useAuth();
+
+  // Find the guard from auth context
+  const guard = GUARDS.find((g) => g.badgeId === authBadgeId);
+  const name = guard?.name ?? "";
+  const badgeId = guard?.badgeId ?? authBadgeId ?? "";
   const workPost = WORK_POST;
+
   const [notes, setNotes] = useState("");
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,19 +28,17 @@ export default function Index() {
   const [gdprAccepted, setGdprAccepted] = useState(false);
   const [todayAssignment, setTodayAssignment] = useState<{ work_post: string; shift_start: string; shift_end: string } | null>(null);
 
-  // Fetch today's assignment based on badge_id
+  // Fetch today's assignment
   useEffect(() => {
-    if (!badgeId.trim()) { setTodayAssignment(null); return; }
+    if (!badgeId) return;
     const today = new Date().toISOString().slice(0, 10);
     supabase
       .from("monthly_schedule")
       .select("work_post, shift_start, shift_end")
-      .eq("badge_id", badgeId.trim())
+      .eq("badge_id", badgeId)
       .eq("schedule_date", today)
       .maybeSingle()
-      .then(({ data }) => {
-        setTodayAssignment(data as any ?? null);
-      });
+      .then(({ data }) => setTodayAssignment(data as any ?? null));
   }, [badgeId]);
 
   useEffect(() => {
@@ -48,28 +50,12 @@ export default function Index() {
     return () => clearInterval(t);
   }, []);
 
-  const validate = () => {
-    if (!name.trim()) {
-      toast.error("Introduce tu nombre antes de fichar");
-      return false;
-    }
-    if (!badgeId.trim()) {
-      toast.error("Introduce tu nº de placa o DNI");
-      return false;
-    }
+  const handleClock = async (type: "entrada" | "salida") => {
     if (!gdprAccepted) {
       toast.error("Debes aceptar la política de protección de datos para fichar");
-      return false;
+      return;
     }
-    return true;
-  };
-
-  const handleClock = async (type: "entrada" | "salida") => {
-    if (!validate()) return;
     setLoading(true);
-    localStorage.setItem("employee-name", name.trim());
-    localStorage.setItem("employee-badge", badgeId.trim());
-    
 
     const location = await requestLocation();
     if (!location) {
@@ -87,9 +73,9 @@ export default function Index() {
 
     const entry: TimeEntry = {
       id: crypto.randomUUID(),
-      employeeName: name.trim(),
-      badgeId: badgeId.trim(),
-      workPost: workPost.trim(),
+      employeeName: name,
+      badgeId,
+      workPost,
       type,
       timestamp: new Date().toISOString(),
       location,
@@ -100,16 +86,16 @@ export default function Index() {
     setEntries(updated);
     setNotes("");
     setLoading(false);
-    toast.success(`¡Entrada registrada, ${name.trim()}!`);
+    toast.success(`¡Entrada registrada, ${name}!`);
   };
 
   const handleSignatureSave = async (dataUrl: string) => {
     setShowSignature(false);
     const entry: TimeEntry = {
       id: crypto.randomUUID(),
-      employeeName: name.trim(),
-      badgeId: badgeId.trim(),
-      workPost: workPost.trim(),
+      employeeName: name,
+      badgeId,
+      workPost,
       type: "salida",
       timestamp: new Date().toISOString(),
       location: pendingLocation!,
@@ -121,22 +107,33 @@ export default function Index() {
     setEntries(updated);
     setNotes("");
     setPendingLocation(null);
-    toast.success(`¡Salida registrada y firmada, ${name.trim()}!`);
+    toast.success(`¡Salida registrada y firmada, ${name}!`);
   };
+
+  // Filter entries for this guard only
+  const myEntries = entries.filter((e) => e.badgeId === badgeId);
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-lg px-4 py-8 sm:py-12">
         {/* Header */}
-        <header
-          className="mb-8 text-center"
-          style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) forwards" }}
-        >
+        <header className="mb-8 text-center" style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) forwards" }}>
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={signOut}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              Cerrar sesión
+            </button>
+          </div>
           <img src={logoImg} alt="PYCSECA Seguridad" className="mx-auto mb-4 h-16 w-auto object-contain" />
           <h1 className="text-2xl font-bold tracking-tight text-primary" style={{ lineHeight: "1.1" }}>
             PYCSECA - Control de Presencia
           </h1>
-          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Kuehne Nagel Cabanillas · Guadalajara</p>
+          <p className="mt-1 text-xs font-medium uppercase tracking-widest text-muted-foreground/70">
+            Kuehne Nagel Cabanillas · Guadalajara
+          </p>
           <p className="mt-2 text-sm text-muted-foreground">
             {now.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
           </p>
@@ -161,42 +158,26 @@ export default function Index() {
           </div>
         )}
 
-        {/* Employee fields */}
+        {/* Guard info (read-only) */}
         <div
           className="mb-6 space-y-3"
           style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 100ms forwards", opacity: 0 }}
         >
           <div>
-            <label htmlFor="employee-name" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <User className="h-4 w-4" /> Nombre del vigilante
+            <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <User className="h-4 w-4" /> Vigilante
             </label>
-            <Select value={name} onValueChange={(val) => {
-              setName(val);
-              const guard = GUARDS.find(g => g.name === val);
-              if (guard) setBadgeId(guard.badgeId);
-            }}>
-              <SelectTrigger className="w-full rounded-xl border border-input bg-card px-4 py-3 text-base font-medium ring-ring/20 focus:ring-2 focus:border-foreground/20 h-auto">
-                <SelectValue placeholder="Selecciona un vigilante" />
-              </SelectTrigger>
-              <SelectContent>
-                {GUARDS.map(g => (
-                  <SelectItem key={g.badgeId} value={g.name}>{g.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-base font-medium text-foreground">
+              {name || "—"}
+            </div>
           </div>
           <div>
-            <label htmlFor="badge-id" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <BadgeCheck className="h-4 w-4" /> Nº Placa / DNI
             </label>
-            <input
-              id="badge-id"
-              type="text"
-              value={badgeId}
-              readOnly
-              placeholder="Se rellena automáticamente"
-              className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-base font-medium placeholder:text-muted-foreground/40 outline-none cursor-not-allowed"
-            />
+            <div className="w-full rounded-xl border border-input bg-muted px-4 py-3 text-base font-medium text-foreground">
+              {badgeId || "—"}
+            </div>
           </div>
           <div>
             <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -257,41 +238,37 @@ export default function Index() {
 
         {/* Clock buttons */}
         <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 300ms forwards", opacity: 0 }}>
-          <ClockButtons onClock={handleClock} onDelay={() => {
-            if (!validate()) return;
-            const msg = `⚠️ ${name.trim()} (${badgeId.trim()}) avisa de RETRASO en ${workPost.trim()} — ${new Date().toLocaleTimeString("es-ES")}`;
-            setNotes((prev) => prev ? `${prev}\n${msg}` : msg);
-            toast.warning("Aviso de retraso registrado en incidencias");
-          }} loading={loading} disabled={!gdprAccepted} />
+          <ClockButtons
+            onClock={handleClock}
+            onDelay={() => {
+              if (!gdprAccepted) { toast.error("Debes aceptar la política de protección de datos"); return; }
+              const msg = `⚠️ ${name} (${badgeId}) avisa de RETRASO en ${workPost} — ${new Date().toLocaleTimeString("es-ES")}`;
+              setNotes((prev) => (prev ? `${prev}\n${msg}` : msg));
+              toast.warning("Aviso de retraso registrado en incidencias");
+            }}
+            loading={loading}
+            disabled={!gdprAccepted}
+          />
         </div>
 
-        {/* History */}
+        {/* History - only my entries */}
         <div
           className="mt-10"
           style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 430ms forwards", opacity: 0 }}
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Últimos fichajes</h2>
-            <div className="flex items-center gap-2">
-              <Link
-                to="/inspector"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Panel Inspector
-              </Link>
-            {entries.length > 0 && (
+            <h2 className="text-lg font-semibold">Mis fichajes</h2>
+            {myEntries.length > 0 && (
               <button
-                onClick={() => exportToCSV(entries)}
+                onClick={() => exportToCSV(myEntries)}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground active:scale-[0.97]"
               >
                 <FileDown className="h-3.5 w-3.5" />
                 Exportar CSV
               </button>
             )}
-            </div>
           </div>
-          <HistoryTable entries={entries} />
+          <HistoryTable entries={myEntries} />
         </div>
 
         {/* LOPD footer */}
