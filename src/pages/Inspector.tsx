@@ -59,12 +59,13 @@ export default function Inspector() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            <button
+              onClick={signOut}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
             >
-              ← Volver a fichaje
-            </Link>
+              <LogOut className="h-3.5 w-3.5" />
+              Cerrar sesión
+            </button>
             <Link
               to="/cuadrante"
               className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
