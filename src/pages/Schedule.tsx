@@ -1,15 +1,25 @@
 import { useState, useEffect, useRef } from "react";
-import { CalendarDays, Plus, Trash2, Upload, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Upload, RefreshCw, AlertTriangle } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 
 const WORK_POSTS = [
   "Logística Guadalajara",
   "Planta Industrial Castilla",
   "Centro Comercial Azuqueca",
   "Sede PYCSECA",
+];
+
+const VIGILANTES = [
+  { name: "MORALES FRAILE, MARIA DEL CARMEN", badgeId: "5504" },
+  { name: "NAVARRO RAPOSO, JOAQUIN", badgeId: "5506" },
+  { name: "MORENO GARCIA, OSCAR", badgeId: "5499" },
+  { name: "ROTARIU, MARINELA", badgeId: "5505" },
 ];
 
 interface ScheduleEntry {
@@ -32,14 +42,21 @@ export default function Schedule() {
   });
 
   // Form state
-  const [formName, setFormName] = useState("");
+  const [formVigilante, setFormVigilante] = useState("");
   const [formBadge, setFormBadge] = useState("");
   const [formPost, setFormPost] = useState(WORK_POSTS[0]);
   const [formDate, setFormDate] = useState("");
   const [formStart, setFormStart] = useState("08:00");
   const [formEnd, setFormEnd] = useState("20:00");
   const [formNotes, setFormNotes] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleVigilanteChange = (value: string) => {
+    setFormVigilante(value);
+    const found = VIGILANTES.find((v) => v.name === value);
+    setFormBadge(found ? found.badgeId : "");
+  };
 
   const fetchSchedule = async () => {
     setLoading(true);
@@ -62,13 +79,13 @@ export default function Schedule() {
   useEffect(() => { fetchSchedule(); }, [month]);
 
   const addEntry = async () => {
-    if (!formName.trim() || !formBadge.trim() || !formDate) {
+    if (!formVigilante || !formBadge.trim() || !formDate) {
       toast.error("Rellena nombre, DNI/placa y fecha");
       return;
     }
     const { error } = await supabase.from("monthly_schedule").upsert(
       {
-        employee_name: formName.trim(),
+        employee_name: formVigilante,
         badge_id: formBadge.trim(),
         work_post: formPost,
         schedule_date: formDate,
@@ -83,8 +100,26 @@ export default function Schedule() {
       return;
     }
     toast.success("Asignación guardada");
-    setFormName(""); setFormBadge(""); setFormDate(""); setFormNotes("");
+    setFormVigilante(""); setFormBadge(""); setFormDate(""); setFormNotes("");
     fetchSchedule();
+  };
+
+  const deleteMonth = async () => {
+    const [y, m] = month.split("-").map(Number);
+    const startDate = `${month}-01`;
+    const endDate = `${y}-${String(m).padStart(2, "0")}-${new Date(y, m, 0).getDate()}`;
+    const { error } = await supabase
+      .from("monthly_schedule")
+      .delete()
+      .gte("schedule_date", startDate)
+      .lte("schedule_date", endDate);
+    if (error) {
+      toast.error("Error al borrar: " + error.message);
+    } else {
+      toast.success("Mes borrado correctamente");
+      setEntries([]);
+    }
+    setShowDeleteDialog(false);
   };
 
   const deleteEntry = async (id: string) => {
@@ -185,25 +220,67 @@ export default function Schedule() {
               <Upload className="h-3.5 w-3.5" />
               Importar CSV
             </button>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Borrar mes
+            </button>
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleCSVImport} />
           </div>
         </header>
+
+        {/* Delete month dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Borrar mes
+              </DialogTitle>
+              <DialogDescription>
+                ¿Borrar todas las asignaciones de este mes?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <button
+                onClick={() => setShowDeleteDialog(false)}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={deleteMonth}
+                className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+              >
+                Confirmar
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Add Form */}
         <div className="mb-8 rounded-xl border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-semibold">Añadir asignación</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-            <input
-              placeholder="Nombre del vigilante"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:ring-2 ring-ring/20"
-            />
+            <select
+              value={formVigilante}
+              onChange={(e) => handleVigilanteChange(e.target.value)}
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 ring-ring/20"
+            >
+              <option value="">Seleccionar vigilante…</option>
+              {VIGILANTES.map((v) => (
+                <option key={v.badgeId} value={v.name}>
+                  {v.name} ({v.badgeId})
+                </option>
+              ))}
+            </select>
             <input
               placeholder="DNI / Placa"
               value={formBadge}
-              onChange={(e) => setFormBadge(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:ring-2 ring-ring/20"
+              readOnly
+              className="rounded-lg border border-input bg-muted px-3 py-2 text-sm outline-none"
             />
             <select
               value={formPost}
