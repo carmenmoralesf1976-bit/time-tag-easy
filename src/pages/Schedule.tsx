@@ -228,17 +228,23 @@ export default function Schedule() {
         <div className="mb-8 rounded-xl border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-semibold">Añadir asignación</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-            <input
-              placeholder="Nombre del vigilante"
-              value={formName}
-              onChange={(e) => setFormName(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:ring-2 ring-ring/20"
-            />
+            <select
+              value={formVigilante}
+              onChange={(e) => handleVigilanteChange(e.target.value)}
+              className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 ring-ring/20"
+            >
+              <option value="">Seleccionar vigilante…</option>
+              {VIGILANTES.map((v) => (
+                <option key={v.badgeId} value={v.name}>
+                  {v.name} ({v.badgeId})
+                </option>
+              ))}
+            </select>
             <input
               placeholder="DNI / Placa"
               value={formBadge}
-              onChange={(e) => setFormBadge(e.target.value)}
-              className="rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 outline-none focus:ring-2 ring-ring/20"
+              readOnly
+              className="rounded-lg border border-input bg-muted px-3 py-2 text-sm outline-none"
             />
             <select
               value={formPost}
