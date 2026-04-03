@@ -220,9 +220,45 @@ export default function Schedule() {
               <Upload className="h-3.5 w-3.5" />
               Importar CSV
             </button>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Borrar mes
+            </button>
             <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleCSVImport} />
           </div>
         </header>
+
+        {/* Delete month dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                Borrar mes
+              </DialogTitle>
+              <DialogDescription>
+                ¿Borrar todas las asignaciones de este mes?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <button
+                onClick={() => setShowDeleteDialog(false)}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={deleteMonth}
+                className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90"
+              >
+                Confirmar
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Add Form */}
         <div className="mb-8 rounded-xl border border-border bg-card p-4">
