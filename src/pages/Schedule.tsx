@@ -79,13 +79,13 @@ export default function Schedule() {
   useEffect(() => { fetchSchedule(); }, [month]);
 
   const addEntry = async () => {
-    if (!formName.trim() || !formBadge.trim() || !formDate) {
+    if (!formVigilante || !formBadge.trim() || !formDate) {
       toast.error("Rellena nombre, DNI/placa y fecha");
       return;
     }
     const { error } = await supabase.from("monthly_schedule").upsert(
       {
-        employee_name: formName.trim(),
+        employee_name: formVigilante,
         badge_id: formBadge.trim(),
         work_post: formPost,
         schedule_date: formDate,
@@ -100,8 +100,26 @@ export default function Schedule() {
       return;
     }
     toast.success("Asignación guardada");
-    setFormName(""); setFormBadge(""); setFormDate(""); setFormNotes("");
+    setFormVigilante(""); setFormBadge(""); setFormDate(""); setFormNotes("");
     fetchSchedule();
+  };
+
+  const deleteMonth = async () => {
+    const [y, m] = month.split("-").map(Number);
+    const startDate = `${month}-01`;
+    const endDate = `${y}-${String(m).padStart(2, "0")}-${new Date(y, m, 0).getDate()}`;
+    const { error } = await supabase
+      .from("monthly_schedule")
+      .delete()
+      .gte("schedule_date", startDate)
+      .lte("schedule_date", endDate);
+    if (error) {
+      toast.error("Error al borrar: " + error.message);
+    } else {
+      toast.success("Mes borrado correctamente");
+      setEntries([]);
+    }
+    setShowDeleteDialog(false);
   };
 
   const deleteEntry = async (id: string) => {
