@@ -140,6 +140,10 @@ export default function Schedule() {
     (acc[e.schedule_date] ??= []).push(e);
     return acc;
   }, {});
+  // Sort each day's entries by shift_start ascending
+  Object.values(grouped).forEach((list) =>
+    list.sort((a, b) => a.shift_start.localeCompare(b.shift_start))
+  );
 
   return (
     <div className="min-h-screen bg-background">
