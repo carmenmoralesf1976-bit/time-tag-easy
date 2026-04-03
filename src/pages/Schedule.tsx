@@ -1,15 +1,25 @@
 import { useState, useEffect, useRef } from "react";
-import { CalendarDays, Plus, Trash2, Upload, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Upload, RefreshCw, AlertTriangle } from "lucide-react";
 import logoImg from "@/assets/logo-pycseca.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 
 const WORK_POSTS = [
   "Logística Guadalajara",
   "Planta Industrial Castilla",
   "Centro Comercial Azuqueca",
   "Sede PYCSECA",
+];
+
+const VIGILANTES = [
+  { name: "MORALES FRAILE, MARIA DEL CARMEN", badgeId: "5504" },
+  { name: "NAVARRO RAPOSO, JOAQUIN", badgeId: "5506" },
+  { name: "MORENO GARCIA, OSCAR", badgeId: "5499" },
+  { name: "ROTARIU, MARINELA", badgeId: "5505" },
 ];
 
 interface ScheduleEntry {
