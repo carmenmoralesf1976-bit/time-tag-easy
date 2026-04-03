@@ -42,14 +42,21 @@ export default function Schedule() {
   });
 
   // Form state
-  const [formName, setFormName] = useState("");
+  const [formVigilante, setFormVigilante] = useState("");
   const [formBadge, setFormBadge] = useState("");
   const [formPost, setFormPost] = useState(WORK_POSTS[0]);
   const [formDate, setFormDate] = useState("");
   const [formStart, setFormStart] = useState("08:00");
   const [formEnd, setFormEnd] = useState("20:00");
   const [formNotes, setFormNotes] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleVigilanteChange = (value: string) => {
+    setFormVigilante(value);
+    const found = VIGILANTES.find((v) => v.name === value);
+    setFormBadge(found ? found.badgeId : "");
+  };
 
   const fetchSchedule = async () => {
     setLoading(true);
