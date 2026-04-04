@@ -35,6 +35,48 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_reports: {
+        Row: {
+          badge_id: string
+          created_at: string
+          description: string
+          employee_name: string
+          id: string
+          incident_type: string
+          latitude: number
+          longitude: number
+          photo_url: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string
+          description: string
+          employee_name: string
+          id?: string
+          incident_type: string
+          latitude: number
+          longitude: number
+          photo_url?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string
+          description?: string
+          employee_name?: string
+          id?: string
+          incident_type?: string
+          latitude?: number
+          longitude?: number
+          photo_url?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       monthly_schedule: {
         Row: {
           badge_id: string
