@@ -71,6 +71,54 @@ export type Database = {
         }
         Relationships: []
       }
+      security_rounds: {
+        Row: {
+          badge_id: string
+          created_at: string
+          employee_name: string
+          end_latitude: number | null
+          end_longitude: number | null
+          end_time: string | null
+          id: string
+          notes: string | null
+          start_latitude: number
+          start_longitude: number
+          start_time: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string
+          employee_name: string
+          end_latitude?: number | null
+          end_longitude?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_latitude: number
+          start_longitude: number
+          start_time?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string
+          employee_name?: string
+          end_latitude?: number | null
+          end_longitude?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_latitude?: number
+          start_longitude?: number
+          start_time?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
           badge_id: string
