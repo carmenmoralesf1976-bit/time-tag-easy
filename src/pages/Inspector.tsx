@@ -8,6 +8,7 @@ import { GUARDS } from "@/lib/guards";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import InspectorRounds from "@/components/InspectorRounds";
 
 export default function Inspector() {
   const { signOut } = useAuth();
