@@ -200,6 +200,9 @@ export default function Inspector() {
           </div>
         </div>
 
+        {/* Incidents */}
+        <InspectorIncidents />
+
         {/* Rounds */}
         <InspectorRounds />
 
