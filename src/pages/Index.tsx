@@ -6,6 +6,7 @@ import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
 import RoundControls from "@/components/RoundControls";
+import IncidentForm from "@/components/IncidentForm";
 import { supabase } from "@/integrations/supabase/client";
 import { getEntries, addEntry, requestLocation, exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { toast } from "sonner";
