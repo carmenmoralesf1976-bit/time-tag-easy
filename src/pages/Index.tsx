@@ -237,6 +237,11 @@ export default function Index() {
           Geolocalización obligatoria — se capturarán las coordenadas GPS al fichar
         </div>
 
+        {/* Security rounds */}
+        <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 280ms forwards", opacity: 0 }}>
+          <RoundControls />
+        </div>
+
         {/* Clock buttons */}
         <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 300ms forwards", opacity: 0 }}>
           <ClockButtons

@@ -199,6 +199,9 @@ export default function Inspector() {
           </div>
         </div>
 
+        {/* Rounds */}
+        <InspectorRounds />
+
         {/* Table */}
         <div className="rounded-xl border border-border bg-card overflow-x-auto">
           <table className="w-full text-sm">
