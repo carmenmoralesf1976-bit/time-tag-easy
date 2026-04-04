@@ -6,6 +6,7 @@ import ClockButtons from "@/components/ClockButtons";
 import HistoryTable from "@/components/HistoryTable";
 import SignaturePad from "@/components/SignaturePad";
 import RoundControls from "@/components/RoundControls";
+import IncidentForm from "@/components/IncidentForm";
 import { supabase } from "@/integrations/supabase/client";
 import { getEntries, addEntry, requestLocation, exportToCSV, type TimeEntry } from "@/lib/time-clock";
 import { toast } from "sonner";
@@ -235,6 +236,11 @@ export default function Index() {
         >
           <span className="h-2 w-2 rounded-full bg-[hsl(var(--success))] animate-pulse" />
           Geolocalización obligatoria — se capturarán las coordenadas GPS al fichar
+        </div>
+
+        {/* Incident form */}
+        <div style={{ animation: "fade-up 0.6s cubic-bezier(0.16,1,0.3,1) 270ms forwards", opacity: 0 }}>
+          <IncidentForm />
         </div>
 
         {/* Security rounds */}
