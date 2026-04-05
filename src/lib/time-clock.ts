@@ -14,6 +14,7 @@ export interface TimeEntry {
 
 /** Save entry to Supabase and return latest entries */
 export async function addEntry(entry: TimeEntry): Promise<TimeEntry[]> {
+  const { data: { user } } = await supabase.auth.getUser();
   await supabase.from("time_entries").insert({
     id: entry.id,
     employee_name: entry.employeeName,
@@ -26,6 +27,7 @@ export async function addEntry(entry: TimeEntry): Promise<TimeEntry[]> {
     notes: entry.notes ?? null,
     signature: entry.signature ?? null,
     gdpr_accepted: true,
+    user_id: user?.id ?? null,
   } as any);
 
   // Also keep localStorage as offline fallback
