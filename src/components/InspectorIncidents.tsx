@@ -154,6 +154,8 @@ export default function InspectorIncidents() {
 
     doc.save(`parte_novedad_${d.toISOString().slice(0, 10)}_${r.badge_id}.pdf`);
   }, []);
+
+  const statusColor = (s: string) => {
     if (s === "Resuelto") return "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]";
     if (s === "En gestión") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
     return "bg-destructive/15 text-destructive";
