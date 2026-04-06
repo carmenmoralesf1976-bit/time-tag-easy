@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { ClipboardList, FileDown, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ClipboardList, FileDown, RefreshCw, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import jsPDF from "jspdf";
 import { GUARDS } from "@/lib/guards";
 import { toast } from "sonner";
 import {
