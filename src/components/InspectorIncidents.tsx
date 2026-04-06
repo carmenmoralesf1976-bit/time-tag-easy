@@ -3,6 +3,9 @@ import { ClipboardList, FileDown, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GUARDS } from "@/lib/guards";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 
 type Report = {
   id: string;
