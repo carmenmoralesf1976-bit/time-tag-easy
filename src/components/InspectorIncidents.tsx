@@ -128,7 +128,7 @@ export default function InspectorIncidents() {
     // Photo
     if (r.photo_url) {
       try {
-        const response = await fetch(r.photo_url);
+        const response = await window.fetch(r.photo_url);
         const blob = await response.blob();
         const dataUrl = await new Promise<string>((res) => {
           const reader = new FileReader();
