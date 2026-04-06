@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { ClipboardList, FileDown, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ClipboardList, FileDown, RefreshCw, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import jsPDF from "jspdf";
 import { GUARDS } from "@/lib/guards";
 import { toast } from "sonner";
 import {
@@ -73,6 +74,86 @@ export default function InspectorIncidents() {
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
     a.download = `partes_novedad_${filterDate || "todos"}.csv`; a.click();
   };
+
+  const generatePDF = useCallback(async (r: Report) => {
+    const doc = new jsPDF();
+    const d = new Date(r.created_at);
+    const margin = 20;
+    let y = 20;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("PARTE DE NOVEDAD", margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120);
+    doc.text("PYCSECA Seguridad", margin, y);
+    y += 4;
+    doc.setDrawColor(200);
+    doc.line(margin, y, 190, y);
+    y += 10;
+
+    doc.setTextColor(0);
+    const addField = (label: string, value: string) => {
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text(label, margin, y);
+      y += 5;
+      doc.setFontSize(11);
+      doc.setTextColor(0);
+      doc.text(value, margin, y);
+      y += 8;
+    };
+
+    addField("Vigilante", r.employee_name);
+    addField("N.º Placa", r.badge_id);
+    addField("Fecha", d.toLocaleDateString("es-ES"));
+    addField("Hora", d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }));
+    addField("Tipo de Incidencia", r.incident_type);
+    addField("Estado", r.status);
+
+    // Description with word wrap
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text("Descripcion", margin, y);
+    y += 5;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    const lines = doc.splitTextToSize(r.description, 170);
+    doc.text(lines, margin, y);
+    y += lines.length * 6 + 6;
+
+    // Photo
+    if (r.photo_url) {
+      try {
+        const response = await window.fetch(r.photo_url);
+        const blob = await response.blob();
+        const dataUrl = await new Promise<string>((res) => {
+          const reader = new FileReader();
+          reader.onload = () => res(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+        const imgType = blob.type.includes("png") ? "PNG" : "JPEG";
+        if (y > 200) { doc.addPage(); y = 20; }
+        doc.addImage(dataUrl, imgType, margin, y, 100, 75);
+        y += 80;
+      } catch {
+        doc.setFontSize(9);
+        doc.setTextColor(150);
+        doc.text("[Foto no disponible]", margin, y);
+        y += 8;
+      }
+    }
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Generado el ${new Date().toLocaleString("es-ES")}`, margin, 285);
+
+    doc.save(`parte_novedad_${d.toISOString().slice(0, 10)}_${r.badge_id}.pdf`);
+  }, []);
 
   const statusColor = (s: string) => {
     if (s === "Resuelto") return "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]";
@@ -201,6 +282,12 @@ export default function InspectorIncidents() {
                   <p className="text-muted-foreground text-xs mb-1">Descripción</p>
                   <p className="text-sm leading-relaxed">{selected.description}</p>
                 </div>
+                <button
+                  onClick={() => generatePDF(selected)}
+                  className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Download className="h-4 w-4" /> Generar Informe PDF
+                </button>
               </div>
             );
           })()}
