@@ -25,6 +25,7 @@ export default function InspectorIncidents() {
   const [loading, setLoading] = useState(true);
   const [filterDate, setFilterDate] = useState(new Date().toISOString().slice(0, 10));
   const [filterGuard, setFilterGuard] = useState("");
+  const [selected, setSelected] = useState<Report | null>(null);
 
   const fetch = async () => {
     setLoading(true);
