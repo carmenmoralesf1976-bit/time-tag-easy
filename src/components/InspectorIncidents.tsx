@@ -75,7 +75,85 @@ export default function InspectorIncidents() {
     a.download = `partes_novedad_${filterDate || "todos"}.csv`; a.click();
   };
 
-  const statusColor = (s: string) => {
+  const generatePDF = useCallback(async (r: Report) => {
+    const doc = new jsPDF();
+    const d = new Date(r.created_at);
+    const margin = 20;
+    let y = 20;
+
+    // Header
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("PARTE DE NOVEDAD", margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120);
+    doc.text("PYCSECA Seguridad", margin, y);
+    y += 4;
+    doc.setDrawColor(200);
+    doc.line(margin, y, 190, y);
+    y += 10;
+
+    doc.setTextColor(0);
+    const addField = (label: string, value: string) => {
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text(label, margin, y);
+      y += 5;
+      doc.setFontSize(11);
+      doc.setTextColor(0);
+      doc.text(value, margin, y);
+      y += 8;
+    };
+
+    addField("Vigilante", r.employee_name);
+    addField("N.º Placa", r.badge_id);
+    addField("Fecha", d.toLocaleDateString("es-ES"));
+    addField("Hora", d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }));
+    addField("Tipo de Incidencia", r.incident_type);
+    addField("Estado", r.status);
+
+    // Description with word wrap
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text("Descripcion", margin, y);
+    y += 5;
+    doc.setFontSize(11);
+    doc.setTextColor(0);
+    const lines = doc.splitTextToSize(r.description, 170);
+    doc.text(lines, margin, y);
+    y += lines.length * 6 + 6;
+
+    // Photo
+    if (r.photo_url) {
+      try {
+        const response = await fetch(r.photo_url);
+        const blob = await response.blob();
+        const dataUrl = await new Promise<string>((res) => {
+          const reader = new FileReader();
+          reader.onload = () => res(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+        const imgType = blob.type.includes("png") ? "PNG" : "JPEG";
+        if (y > 200) { doc.addPage(); y = 20; }
+        doc.addImage(dataUrl, imgType, margin, y, 100, 75);
+        y += 80;
+      } catch {
+        doc.setFontSize(9);
+        doc.setTextColor(150);
+        doc.text("[Foto no disponible]", margin, y);
+        y += 8;
+      }
+    }
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(`Generado el ${new Date().toLocaleString("es-ES")}`, margin, 285);
+
+    doc.save(`parte_novedad_${d.toISOString().slice(0, 10)}_${r.badge_id}.pdf`);
+  }, []);
     if (s === "Resuelto") return "bg-[hsl(var(--success)/0.15)] text-[hsl(var(--success))]";
     if (s === "En gestión") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
     return "bg-destructive/15 text-destructive";
