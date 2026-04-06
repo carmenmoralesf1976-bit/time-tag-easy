@@ -282,6 +282,12 @@ export default function InspectorIncidents() {
                   <p className="text-muted-foreground text-xs mb-1">Descripción</p>
                   <p className="text-sm leading-relaxed">{selected.description}</p>
                 </div>
+                <button
+                  onClick={() => generatePDF(selected)}
+                  className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  <Download className="h-4 w-4" /> Generar Informe PDF
+                </button>
               </div>
             );
           })()}
