@@ -3,6 +3,9 @@ import { ClipboardList, FileDown, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { GUARDS } from "@/lib/guards";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 
 type Report = {
   id: string;
@@ -22,6 +25,7 @@ export default function InspectorIncidents() {
   const [loading, setLoading] = useState(true);
   const [filterDate, setFilterDate] = useState(new Date().toISOString().slice(0, 10));
   const [filterGuard, setFilterGuard] = useState("");
+  const [selected, setSelected] = useState<Report | null>(null);
 
   const fetch = async () => {
     setLoading(true);
@@ -120,20 +124,21 @@ export default function InspectorIncidents() {
             ) : filtered.map((r) => {
               const d = new Date(r.created_at);
               return (
-                <tr key={r.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30 transition-colors">
+                <tr key={r.id} className="border-b border-border/50 last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer"
+                  onClick={() => setSelected(r)}>
                   <td className="px-3 py-2 font-medium">{r.employee_name}</td>
                   <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
                     {d.toLocaleDateString("es-ES")} {d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                   </td>
                   <td className="px-3 py-2">{r.incident_type}</td>
                   <td className="px-3 py-2 text-muted-foreground max-w-[250px] truncate">{r.description}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     {r.photo_url ? (
                       <a href={r.photo_url} target="_blank" rel="noopener noreferrer"
                         className="text-primary underline text-xs">Ver</a>
                     ) : "—"}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={r.status}
                       onChange={(e) => updateStatus(r.id, e.target.value)}
@@ -148,6 +153,59 @@ export default function InspectorIncidents() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal detalle */}
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Detalle del Parte</DialogTitle>
+            <DialogDescription>Información completa de la incidencia</DialogDescription>
+          </DialogHeader>
+          {selected && (() => {
+            const d = new Date(selected.created_at);
+            return (
+              <div className="space-y-4">
+                {selected.photo_url && (
+                  <img src={selected.photo_url} alt="Foto de la incidencia"
+                    className="w-full max-h-80 object-contain rounded-lg border border-border" />
+                )}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs">Vigilante</p>
+                    <p className="font-semibold">{selected.employee_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Placa</p>
+                    <p className="font-semibold">{selected.badge_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Fecha</p>
+                    <p className="font-semibold">{d.toLocaleDateString("es-ES")}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Hora</p>
+                    <p className="font-semibold">{d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Tipo</p>
+                    <p className="font-semibold">{selected.incident_type}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Estado</p>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor(selected.status)}`}>
+                      {selected.status}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs mb-1">Descripción</p>
+                  <p className="text-sm leading-relaxed">{selected.description}</p>
+                </div>
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
