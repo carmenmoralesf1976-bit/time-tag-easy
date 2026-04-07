@@ -215,9 +215,11 @@ export default function InspectorIncidents() {
                   <td className="px-3 py-2 text-muted-foreground max-w-[250px] truncate">{r.description}</td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     {r.photo_url ? (
-                      <a href={r.photo_url} target="_blank" rel="noopener noreferrer"
-                        className="text-primary underline text-xs">Ver</a>
-                    ) : "—"}
+                      <a href={r.photo_url} target="_blank" rel="noopener noreferrer">
+                        <img src={r.photo_url} alt="Foto incidencia"
+                          className="h-10 w-14 rounded object-cover border border-border hover:opacity-80 transition-opacity" />
+                      </a>
+                    ) : <span className="text-muted-foreground">—</span>}
                   </td>
                   <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
                     <select
