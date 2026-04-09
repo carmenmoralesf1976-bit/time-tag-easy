@@ -26,6 +26,17 @@ export default function ClockButtons({ onClock, onDelay, loading, disabled }: Cl
           className="clock-btn-enter flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 p-8 text-lg font-semibold shadow-lg shadow-primary/10 transition-all hover:bg-primary/5 active:scale-95 disabled:pointer-events-none disabled:opacity-50"
         >
           <LogIn className="h-8 w-8" strokeWidth={2.2} />
+          Entrada
+    
+      
+
+    
+        
+      
+              
+      
+            
+    
     
       
         
