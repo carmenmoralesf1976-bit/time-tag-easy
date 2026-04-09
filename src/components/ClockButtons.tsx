@@ -14,12 +14,27 @@ export default function ClockButtons({ onClock, onDelay, loading, disabled }: Cl
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => onClock("entrada")}
+          onClick={() => {
+            onClock("entrada");
+            fetch("https://hooks.zapier.com/hooks/catch/27154721/u7sdjwc/", {
+              method: "POST",
+              mode: "no-cors",
+              body: JSON.stringify({ evento: "Fichaje Entrada", vigilante: "Vigilante Cabanillas" }),
+            });
+          }}
           disabled={isDisabled}
-          className="clock-btn-enter flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 p-8 text-lg font-semibold shadow-lg shadow-[hsl(var(--success)/0.2)] transition-all duration-200 ease-out hover:shadow-xl hover:shadow-[hsl(var(--success)/0.3)] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="clock-btn-enter flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-primary/30 p-8 text-lg font-semibold shadow-lg shadow-primary/10 transition-all hover:bg-primary/5 active:scale-95 disabled:pointer-events-none disabled:opacity-50"
         >
           <LogIn className="h-8 w-8" strokeWidth={2.2} />
-          Entrada
+    
+      
+        
+          
+    
+        
+        
+          
+          
         </button>
         <button
           onClick={() => onClock("salida")}
