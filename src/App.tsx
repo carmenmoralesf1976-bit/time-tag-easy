@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { HashRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,12 +9,9 @@ import Index from "./pages/Index";
 import Inspector from "./pages/Inspector";
 import Schedule from "./pages/Schedule";
 import NotFound from "./pages/NotFound";
-
 const queryClient = new QueryClient();
-
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode; requiredRole?: "admin" | "guard" }) {
   const { session, role, loading } = useAuth();
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -22,16 +19,12 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode;
       </div>
     );
   }
-
   if (!session) return <Navigate to="/login" replace />;
   if (requiredRole && role !== requiredRole) return <Navigate to="/" replace />;
-
   return <>{children}</>;
 }
-
 function AppRoutes() {
   const { session, role, loading } = useAuth();
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -39,7 +32,6 @@ function AppRoutes() {
       </div>
     );
   }
-
   return (
     <Routes>
       <Route path="/login" element={session ? <Navigate to="/" replace /> : <Login />} />
@@ -57,19 +49,17 @@ function AppRoutes() {
     </Routes>
   );
 }
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <HashRouter>
         <AuthProvider>
           <AppRoutes />
         </AuthProvider>
-      </BrowserRouter>
+      </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
-
 export default App;
